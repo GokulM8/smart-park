@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ParkingSquare, Search, Bell, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
