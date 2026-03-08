@@ -147,6 +147,29 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
 
   setRate: (type, rate) => set(s => ({ rates: { ...s.rates, [type]: rate } })),
 
+  addSlot: (slot) => {
+    const newSlot: ParkingSlot = { ...slot, id: String(nextId++), status: 'available' };
+    set(s => ({ slots: [...s.slots, newSlot] }));
+    return newSlot;
+  },
+
+  removeSlot: (slotId) => {
+    const state = get();
+    const hasActive = state.records.some(r => r.slotId === slotId && !r.exitTime);
+    if (hasActive) return false;
+    set(s => ({ slots: s.slots.filter(sl => sl.id !== slotId) }));
+    return true;
+  },
+
+  toggleSlotDisabled: (slotId) => {
+    set(s => ({
+      slots: s.slots.map(sl => {
+        if (sl.id !== slotId || sl.status === 'occupied') return sl;
+        return { ...sl, status: sl.status === 'disabled' ? 'available' as SlotStatus : 'disabled' as SlotStatus };
+      }),
+    }));
+  },
+
   addVehicle: (v) => {
     const vehicle: Vehicle = { ...v, id: `v${nextId++}` };
     set(s => ({ vehicles: [...s.vehicles, vehicle] }));
