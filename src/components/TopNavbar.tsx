@@ -1,9 +1,10 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown, Menu } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
 import NotificationDropdown from './NotificationDropdown';
+import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
