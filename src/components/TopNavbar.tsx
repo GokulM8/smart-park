@@ -231,7 +231,7 @@ export default function TopNavbar() {
 
           {/* Sign out */}
           <div className="p-3 border-t border-border mt-auto">
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>
