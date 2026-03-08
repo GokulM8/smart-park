@@ -142,7 +142,6 @@ export default function EntryExit() {
           {activeRecords.map(r => {
             const v = getVehicle(r.vehicleId);
             const s = getSlot(r.slotId);
-            const dur = Math.round((Date.now() - new Date(r.entryTime).getTime()) / 60000);
             return (
               <div key={r.id} className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
                 <div className="w-10 h-10 rounded-xl bg-lavender flex items-center justify-center text-sm font-bold text-lavender-foreground">
@@ -153,9 +152,7 @@ export default function EntryExit() {
                   <p className="text-xs text-muted-foreground font-mono">{v?.vehicleNumber}</p>
                 </div>
                 <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-semibold hidden sm:inline">{s?.number}</span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {Math.floor(dur / 60)}h {dur % 60}m
-                </span>
+                <LiveDuration entryTime={r.entryTime} />
                 <Button size="sm" variant="outline" className="rounded-xl" onClick={() => openPaymentDialog(r.id)}>
                   <ArrowUpFromLine className="w-3 h-3 mr-1" /> Exit
                 </Button>
