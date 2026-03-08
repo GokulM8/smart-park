@@ -106,6 +106,16 @@ const pastRecords: ParkingRecord[] = Array.from({ length: 20 }, (_, i) => {
   };
 });
 
+export interface BillPreview {
+  vehicleId: string;
+  slotId: string;
+  entryTime: string;
+  duration: number;
+  rate: number;
+  amount: number;
+  vehicleType: VehicleType;
+}
+
 interface ParkingStore {
   slots: ParkingSlot[];
   vehicles: Vehicle[];
@@ -113,6 +123,7 @@ interface ParkingStore {
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
+  calculateBill: (recordId: string) => BillPreview | null;
   getVehicle: (id: string) => Vehicle | undefined;
   getSlot: (id: string) => ParkingSlot | undefined;
   getActiveRecords: () => ParkingRecord[];
@@ -175,6 +186,17 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
     }));
 
     return updated;
+  },
+
+  calculateBill: (recordId) => {
+    const state = get();
+    const record = state.records.find(r => r.id === recordId);
+    if (!record) return null;
+    const slot = state.slots.find(s => s.id === record.slotId);
+    const duration = Math.max(1, Math.round((Date.now() - new Date(record.entryTime).getTime()) / 60000));
+    const rate = RATES[slot?.type || 'car'];
+    const amount = Math.ceil(duration / 60) * rate;
+    return { vehicleId: record.vehicleId, slotId: record.slotId, entryTime: record.entryTime, duration, rate, amount, vehicleType: slot?.type || 'car' };
   },
 
   getVehicle: (id) => get().vehicles.find(v => v.id === id),
