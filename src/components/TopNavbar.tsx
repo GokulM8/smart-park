@@ -29,6 +29,7 @@ export default function TopNavbar() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
