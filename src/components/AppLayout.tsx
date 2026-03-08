@@ -1,11 +1,11 @@
 import { Outlet } from 'react-router-dom';
-import AppSidebar from './AppSidebar';
+import TopNavbar from './TopNavbar';
 
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
-      <AppSidebar />
-      <main className="ml-64 p-8">
+      <TopNavbar />
+      <main className="px-6 pb-8">
         <Outlet />
       </main>
     </div>

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 
 const typeIcons = { car: Car, bike: Bike, ev: Zap };
+const typeBg = { car: 'bg-lavender text-lavender-foreground', bike: 'bg-ice text-ice-foreground', ev: 'bg-peach text-peach-foreground' };
 
 export default function Vehicles() {
   const { vehicles, addVehicle } = useParkingStore();
@@ -40,40 +41,40 @@ export default function Vehicles() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" /> Register Vehicle</Button>
+            <Button className="rounded-xl"><Plus className="w-4 h-4 mr-2" /> Register Vehicle</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="rounded-2xl">
             <DialogHeader><DialogTitle>Register New Vehicle</DialogTitle></DialogHeader>
             <div className="space-y-4 mt-4">
-              <Input placeholder="Vehicle Number (e.g. KA-01-AB-1234)" value={form.vehicleNumber} onChange={e => setForm(f => ({ ...f, vehicleNumber: e.target.value }))} />
+              <Input className="rounded-xl" placeholder="Vehicle Number (e.g. KA-01-AB-1234)" value={form.vehicleNumber} onChange={e => setForm(f => ({ ...f, vehicleNumber: e.target.value }))} />
               <div className="flex gap-2">
                 {(['car', 'bike', 'ev'] as const).map(t => (
-                  <button key={t} onClick={() => setForm(f => ({ ...f, vehicleType: t }))} className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${form.vehicleType === t ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                  <button key={t} onClick={() => setForm(f => ({ ...f, vehicleType: t }))} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${form.vehicleType === t ? 'bg-primary text-primary-foreground shadow-md' : 'bg-muted text-muted-foreground'}`}>
                     {t === 'ev' ? 'EV' : t.charAt(0).toUpperCase() + t.slice(1)}
                   </button>
                 ))}
               </div>
-              <Input placeholder="Owner Name" value={form.ownerName} onChange={e => setForm(f => ({ ...f, ownerName: e.target.value }))} />
-              <Input placeholder="Contact Number" value={form.contactNumber} onChange={e => setForm(f => ({ ...f, contactNumber: e.target.value }))} />
-              <Button className="w-full" onClick={handleAdd}>Register</Button>
+              <Input className="rounded-xl" placeholder="Owner Name" value={form.ownerName} onChange={e => setForm(f => ({ ...f, ownerName: e.target.value }))} />
+              <Input className="rounded-xl" placeholder="Contact Number" value={form.contactNumber} onChange={e => setForm(f => ({ ...f, contactNumber: e.target.value }))} />
+              <Button className="w-full rounded-xl" onClick={handleAdd}>Register</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search vehicles..." className="pl-10" value={search} onChange={e => setSearch(e.target.value)} />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input placeholder="Search vehicles..." className="pl-10 rounded-xl" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <div className="stat-card overflow-x-auto">
+      <div className="glass-card !p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Vehicle Number</th>
-              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Type</th>
-              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Owner</th>
-              <th className="text-left py-3 px-4 text-muted-foreground font-medium">Contact</th>
+              <th className="text-left py-4 px-5 text-muted-foreground font-medium">Vehicle Number</th>
+              <th className="text-left py-4 px-5 text-muted-foreground font-medium">Type</th>
+              <th className="text-left py-4 px-5 text-muted-foreground font-medium">Owner</th>
+              <th className="text-left py-4 px-5 text-muted-foreground font-medium">Contact</th>
             </tr>
           </thead>
           <tbody>
@@ -81,11 +82,15 @@ export default function Vehicles() {
               {filtered.map(v => {
                 const Icon = typeIcons[v.vehicleType];
                 return (
-                  <motion.tr key={v.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-4 font-medium font-mono">{v.vehicleNumber}</td>
-                    <td className="py-3 px-4"><span className="flex items-center gap-2"><Icon className="w-4 h-4 text-primary" />{v.vehicleType === 'ev' ? 'EV' : v.vehicleType.charAt(0).toUpperCase() + v.vehicleType.slice(1)}</span></td>
-                    <td className="py-3 px-4">{v.ownerName}</td>
-                    <td className="py-3 px-4">{v.contactNumber}</td>
+                  <motion.tr key={v.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="border-b border-border/50 hover:bg-muted/40 transition-colors">
+                    <td className="py-3.5 px-5 font-semibold font-mono">{v.vehicleNumber}</td>
+                    <td className="py-3.5 px-5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${typeBg[v.vehicleType]}`}>
+                        <Icon className="w-3.5 h-3.5" />{v.vehicleType === 'ev' ? 'EV' : v.vehicleType.charAt(0).toUpperCase() + v.vehicleType.slice(1)}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-5">{v.ownerName}</td>
+                    <td className="py-3.5 px-5 text-muted-foreground">{v.contactNumber}</td>
                   </motion.tr>
                 );
               })}
