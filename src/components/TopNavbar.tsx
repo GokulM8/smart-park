@@ -107,11 +107,11 @@ export default function TopNavbar() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="hidden lg:block text-right">
-                <p className="text-sm font-semibold leading-tight">Angie D</p>
-                <p className="text-xs text-muted-foreground">admin@park.io</p>
+                <p className="text-sm font-semibold leading-tight">{userName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
-                A
+                {userInitial}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
             </button>
