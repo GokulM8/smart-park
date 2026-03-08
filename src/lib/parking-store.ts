@@ -106,6 +106,16 @@ const pastRecords: ParkingRecord[] = Array.from({ length: 20 }, (_, i) => {
   };
 });
 
+export interface BillPreview {
+  vehicleId: string;
+  slotId: string;
+  entryTime: string;
+  duration: number;
+  rate: number;
+  amount: number;
+  vehicleType: VehicleType;
+}
+
 interface ParkingStore {
   slots: ParkingSlot[];
   vehicles: Vehicle[];
@@ -113,6 +123,7 @@ interface ParkingStore {
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
+  calculateBill: (recordId: string) => BillPreview | null;
   getVehicle: (id: string) => Vehicle | undefined;
   getSlot: (id: string) => ParkingSlot | undefined;
   getActiveRecords: () => ParkingRecord[];
