@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type VehicleType = 'car' | 'bike' | 'ev';
-export type SlotStatus = 'available' | 'occupied';
+export type SlotStatus = 'available' | 'occupied' | 'disabled';
 export type PaymentStatus = 'paid' | 'unpaid';
 
 export interface ParkingSlot {
@@ -122,6 +122,9 @@ interface ParkingStore {
   records: ParkingRecord[];
   rates: Record<VehicleType, number>;
   setRate: (type: VehicleType, rate: number) => void;
+  addSlot: (slot: Omit<ParkingSlot, 'id' | 'status'>) => ParkingSlot;
+  removeSlot: (slotId: string) => boolean;
+  toggleSlotDisabled: (slotId: string) => void;
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
@@ -143,6 +146,29 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
   rates: { ...DEFAULT_RATES },
 
   setRate: (type, rate) => set(s => ({ rates: { ...s.rates, [type]: rate } })),
+
+  addSlot: (slot) => {
+    const newSlot: ParkingSlot = { ...slot, id: String(nextId++), status: 'available' };
+    set(s => ({ slots: [...s.slots, newSlot] }));
+    return newSlot;
+  },
+
+  removeSlot: (slotId) => {
+    const state = get();
+    const hasActive = state.records.some(r => r.slotId === slotId && !r.exitTime);
+    if (hasActive) return false;
+    set(s => ({ slots: s.slots.filter(sl => sl.id !== slotId) }));
+    return true;
+  },
+
+  toggleSlotDisabled: (slotId) => {
+    set(s => ({
+      slots: s.slots.map(sl => {
+        if (sl.id !== slotId || sl.status === 'occupied') return sl;
+        return { ...sl, status: sl.status === 'disabled' ? 'available' as SlotStatus : 'disabled' as SlotStatus };
+      }),
+    }));
+  },
 
   addVehicle: (v) => {
     const vehicle: Vehicle = { ...v, id: `v${nextId++}` };
