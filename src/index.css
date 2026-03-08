@@ -183,8 +183,12 @@
   }
 
   .glass-surface {
-    @apply bg-card/80 rounded-3xl border border-border/40 p-8;
+    @apply bg-card/90 rounded-3xl border border-border/40 p-8;
     backdrop-filter: blur(16px);
+  }
+
+  .dark .glass-surface {
+    @apply bg-card/80;
   }
 
   .parking-slot {
