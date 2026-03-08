@@ -89,4 +89,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.removeItem(SESSION_KEY);
     set({ user: null });
   },
+
+  updateProfile: async (data) => {
+    await new Promise(r => setTimeout(r, 500));
+    const users = getStoredUsers();
+    const current = useAuthStore.getState().user;
+    if (!current) throw new Error('Not authenticated');
+    if (data.email) {
+      const conflict = users.find(u => u.email.toLowerCase() === data.email!.toLowerCase() && u.id !== current.id);
+      if (conflict) throw new Error('An account with this email already exists');
+    }
+    const updated = users.map(u => u.id === current.id ? { ...u, ...data } : u);
+    saveUsers(updated);
+    const newUser = { ...current, ...data };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
+    set({ user: newUser });
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    await new Promise(r => setTimeout(r, 500));
+    const users = getStoredUsers();
+    const current = useAuthStore.getState().user;
+    if (!current) throw new Error('Not authenticated');
+    const found = users.find(u => u.id === current.id);
+    if (!found || found.password !== currentPassword) throw new Error('Current password is incorrect');
+    const updated = users.map(u => u.id === current.id ? { ...u, password: newPassword } : u);
+    saveUsers(updated);
+  },
 }));
