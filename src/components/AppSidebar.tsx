@@ -57,16 +57,11 @@ export default function AppSidebar() {
 
       <div className="p-4 border-t border-sidebar-hover space-y-2">
         <button
-          onClick={() => {
-            const next = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', next ? 'dark' : 'light');
-          }}
+          onClick={() => setDark(d => !d)}
           className="nav-item w-full text-sidebar-fg hover:bg-sidebar-hover hover:text-primary-foreground"
         >
-          {typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
-            ? <Sun className="w-5 h-5" />
-            : <Moon className="w-5 h-5" />}
-          Toggle Theme
+          {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {dark ? 'Light Mode' : 'Dark Mode'}
         </button>
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">A</div>
