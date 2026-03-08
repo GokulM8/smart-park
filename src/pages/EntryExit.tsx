@@ -9,6 +9,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 const vehicleIcons = { car: Car, bike: Bike, ev: Zap };
 
+function LiveDuration({ entryTime }: { entryTime: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const totalSec = Math.max(0, Math.floor((now - new Date(entryTime).getTime()) / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return (
+    <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono tabular-nums">
+      <Clock className="w-3 h-3" /> {h}h {String(m).padStart(2, '0')}m {String(s).padStart(2, '0')}s
+    </span>
+  );
+}
+
 export default function EntryExit() {
   const { vehicles, slots, records, vehicleEntry, vehicleExit, calculateBill, getVehicle, getSlot } = useParkingStore();
   const [vehicleSearch, setVehicleSearch] = useState('');
