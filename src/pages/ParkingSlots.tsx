@@ -43,7 +43,7 @@ export default function ParkingSlots() {
         >
           All Floors
         </button>
-        {floors.map(f => (
+        {floors.map((f: number) => (
           <button
             key={f}
             onClick={() => setFloorFilter(f)}
