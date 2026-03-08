@@ -122,6 +122,9 @@ interface ParkingStore {
   records: ParkingRecord[];
   rates: Record<VehicleType, number>;
   setRate: (type: VehicleType, rate: number) => void;
+  addSlot: (slot: Omit<ParkingSlot, 'id' | 'status'>) => ParkingSlot;
+  removeSlot: (slotId: string) => boolean;
+  toggleSlotDisabled: (slotId: string) => void;
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
