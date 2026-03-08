@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
 import NotificationDropdown from './NotificationDropdown';
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
+import { useAuthStore } from '@/lib/auth-store';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
@@ -25,6 +26,10 @@ const adminMenuItems = [
 export default function TopNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || 'U';
+  const userName = user?.name || 'User';
+  const userEmail = user?.email || '';
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     if (saved) return saved === 'dark';
@@ -102,11 +107,11 @@ export default function TopNavbar() {
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="hidden lg:block text-right">
-                <p className="text-sm font-semibold leading-tight">Angie D</p>
-                <p className="text-xs text-muted-foreground">admin@park.io</p>
+                <p className="text-sm font-semibold leading-tight">{userName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
-                A
+                {userInitial}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -123,11 +128,11 @@ export default function TopNavbar() {
                   <div className="p-4 bg-muted/50 border-b border-border">
                     <div className="flex items-center gap-3">
                       <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
-                        A
+                        {userInitial}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold">Angie D</p>
-                        <p className="text-xs text-muted-foreground">admin@park.io</p>
+                        <p className="text-sm font-semibold">{userName}</p>
+                        <p className="text-xs text-muted-foreground">{userEmail}</p>
                         <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
                           <Shield className="w-2.5 h-2.5" /> Administrator
                         </span>
@@ -148,7 +153,7 @@ export default function TopNavbar() {
                     ))}
                   </div>
                   <div className="p-2 border-t border-border">
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
                       <LogOut className="w-4 h-4" />
                       Sign Out
                     </button>
@@ -176,11 +181,11 @@ export default function TopNavbar() {
           <div className="p-5 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
-                A
+                {userInitial}
               </div>
               <div>
-                <p className="text-sm font-semibold">Angie D</p>
-                <p className="text-xs text-muted-foreground">admin@park.io</p>
+                <p className="text-sm font-semibold">{userName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
                 <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
                   <Shield className="w-2.5 h-2.5" /> Administrator
                 </span>
@@ -226,7 +231,7 @@ export default function TopNavbar() {
 
           {/* Sign out */}
           <div className="p-3 border-t border-border mt-auto">
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>
