@@ -26,6 +26,10 @@ const adminMenuItems = [
 export default function TopNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || 'U';
+  const userName = user?.name || 'User';
+  const userEmail = user?.email || '';
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     if (saved) return saved === 'dark';
