@@ -258,8 +258,8 @@ export default function EntryExit() {
                     {/* Payment method */}
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(['cash', 'card', 'upi'] as const).map(method => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['cash', 'phonepe'] as const).map(method => (
                           <button
                             key={method}
                             onClick={() => setPaymentMethod(method)}
@@ -270,9 +270,8 @@ export default function EntryExit() {
                             }`}
                           >
                             {method === 'cash' && <IndianRupee className="w-3.5 h-3.5 inline mr-1" />}
-                            {method === 'card' && <CreditCard className="w-3.5 h-3.5 inline mr-1" />}
-                            {method === 'upi' && '⚡ '}
-                            {method.charAt(0).toUpperCase() + method.slice(1)}
+                            {method === 'phonepe' && <Smartphone className="w-3.5 h-3.5 inline mr-1" />}
+                            {method === 'cash' ? 'Cash' : 'PhonePe'}
                           </button>
                         ))}
                       </div>
