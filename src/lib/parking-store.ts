@@ -140,6 +140,9 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
   slots: seedSlots,
   vehicles: seedVehicles,
   records: [...seedRecords, ...pastRecords],
+  rates: { ...DEFAULT_RATES },
+
+  setRate: (type, rate) => set(s => ({ rates: { ...s.rates, [type]: rate } })),
 
   addVehicle: (v) => {
     const vehicle: Vehicle = { ...v, id: `v${nextId++}` };
