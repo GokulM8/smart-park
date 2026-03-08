@@ -3,6 +3,7 @@ import { ParkingSquare, Search, Bell, Moon, Sun, Settings, Users, BarChart3, Log
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
+import NotificationDropdown from './NotificationDropdown';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
