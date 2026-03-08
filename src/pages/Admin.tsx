@@ -4,18 +4,13 @@ import StatCard from '@/components/StatCard';
 
 export default function Admin() {
   const { slots, vehicles, records } = useParkingStore();
-
   const activeRecords = records.filter(r => !r.exitTime);
 
-  const stats = {
-    totalSlots: slots.length,
-    carSlots: slots.filter(s => s.type === 'car').length,
-    bikeSlots: slots.filter(s => s.type === 'bike').length,
-    evSlots: slots.filter(s => s.type === 'ev').length,
-    registeredVehicles: vehicles.length,
-    activeSessions: activeRecords.length,
-    totalTransactions: records.filter(r => r.exitTime).length,
-  };
+  const slotConfig = [
+    { type: 'Car', icon: Car, count: slots.filter(s => s.type === 'car').length, occupied: slots.filter(s => s.type === 'car' && s.status === 'occupied').length, bg: 'bg-lavender', text: 'text-lavender-foreground' },
+    { type: 'Bike', icon: Bike, count: slots.filter(s => s.type === 'bike').length, occupied: slots.filter(s => s.type === 'bike' && s.status === 'occupied').length, bg: 'bg-ice', text: 'text-ice-foreground' },
+    { type: 'EV', icon: Zap, count: slots.filter(s => s.type === 'ev').length, occupied: slots.filter(s => s.type === 'ev' && s.status === 'occupied').length, bg: 'bg-peach', text: 'text-peach-foreground' },
+  ];
 
   return (
     <div className="space-y-8">
@@ -25,50 +20,46 @@ export default function Admin() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total Slots" value={stats.totalSlots} icon={ParkingSquare} color="primary" />
-        <StatCard title="Registered Vehicles" value={stats.registeredVehicles} icon={Users} color="success" />
-        <StatCard title="Active Sessions" value={stats.activeSessions} icon={Activity} color="warning" />
-        <StatCard title="Total Transactions" value={stats.totalTransactions} icon={Settings} color="primary" />
+        <StatCard title="Total Slots" value={slots.length} icon={ParkingSquare} color="lavender" />
+        <StatCard title="Registered Vehicles" value={vehicles.length} icon={Users} color="ice" />
+        <StatCard title="Active Sessions" value={activeRecords.length} icon={Activity} color="peach" />
+        <StatCard title="Total Transactions" value={records.filter(r => r.exitTime).length} icon={Settings} color="primary" />
       </div>
 
-      <div className="stat-card">
-        <h3 className="font-display font-semibold text-lg mb-4">Slot Configuration</h3>
+      <div className="glass-card">
+        <h3 className="font-display font-semibold text-lg mb-5">Slot Configuration</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { type: 'Car', icon: Car, count: stats.carSlots, occupied: slots.filter(s => s.type === 'car' && s.status === 'occupied').length },
-            { type: 'Bike', icon: Bike, count: stats.bikeSlots, occupied: slots.filter(s => s.type === 'bike' && s.status === 'occupied').length },
-            { type: 'EV', icon: Zap, count: stats.evSlots, occupied: slots.filter(s => s.type === 'ev' && s.status === 'occupied').length },
-          ].map(item => (
-            <div key={item.type} className="p-4 rounded-xl bg-muted/50 border border-border">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-primary" />
+          {slotConfig.map(item => (
+            <div key={item.type} className={`${item.bg} rounded-2xl p-5`}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-card/50 flex items-center justify-center">
+                  <item.icon className={`w-5 h-5 ${item.text}`} />
                 </div>
                 <div>
-                  <p className="font-semibold">{item.type} Slots</p>
-                  <p className="text-xs text-muted-foreground">{item.occupied} / {item.count} occupied</p>
+                  <p className={`font-semibold ${item.text}`}>{item.type} Slots</p>
+                  <p className={`text-xs ${item.text} opacity-60`}>{item.occupied} / {item.count} occupied</p>
                 </div>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-primary rounded-full h-2 transition-all" style={{ width: `${(item.occupied / item.count) * 100}%` }} />
+              <div className="w-full bg-card/40 rounded-full h-2.5">
+                <div className="bg-primary rounded-full h-2.5 transition-all" style={{ width: `${(item.occupied / item.count) * 100}%` }} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="stat-card">
-        <h3 className="font-display font-semibold text-lg mb-4">System Information</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div className="glass-card">
+        <h3 className="font-display font-semibold text-lg mb-5">System Information</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'System', value: 'ParkSmart v1.0' },
             { label: 'Floors', value: '2' },
             { label: 'Operating Hours', value: '24/7' },
             { label: 'Status', value: 'Active' },
           ].map(item => (
-            <div key={item.label} className="p-3 rounded-lg bg-muted/50">
-              <p className="text-muted-foreground text-xs">{item.label}</p>
-              <p className="font-semibold mt-1">{item.value}</p>
+            <div key={item.label} className="p-4 rounded-2xl bg-muted/50">
+              <p className="text-muted-foreground text-xs font-medium">{item.label}</p>
+              <p className="font-semibold mt-1.5">{item.value}</p>
             </div>
           ))}
         </div>
