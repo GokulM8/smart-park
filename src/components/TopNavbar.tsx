@@ -67,13 +67,13 @@ export default function TopNavbar() {
           <Bell className="w-4 h-4" />
           <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-card" />
         </button>
-        <div className="flex items-center gap-2 ml-2 pl-3 border-l border-border">
-          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-sm font-bold text-primary">
-            A
-          </div>
-          <div className="hidden lg:block">
-            <p className="text-sm font-semibold leading-tight">Admin</p>
+        <div className="flex items-center gap-3 ml-2 pl-3 border-l border-border">
+          <div className="hidden lg:block text-right">
+            <p className="text-sm font-semibold leading-tight">Angie D</p>
             <p className="text-xs text-muted-foreground">admin@park.io</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
+            A
           </div>
         </div>
       </div>
