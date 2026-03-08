@@ -57,15 +57,15 @@ export default function Reports() {
             <AreaChart data={dailyRevenue}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(252, 56%, 57%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(252, 56%, 57%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
-              <Area type="monotone" dataKey="revenue" stroke="hsl(252, 56%, 57%)" strokeWidth={2.5} fill="url(#revGrad)" />
+              <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#revGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
@@ -80,7 +80,7 @@ export default function Reports() {
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
               <Bar dataKey="count" radius={[10, 10, 10, 10]}>
                 {typeStats.map((_, i) => {
-                  const fills = ['hsl(252, 56%, 57%)', 'hsl(32, 95%, 55%)', 'hsl(200, 80%, 56%)'];
+                  const fills = ['hsl(var(--lavender-foreground))', 'hsl(var(--warning))', 'hsl(var(--primary))'];
                   return <motion.rect key={i} fill={fills[i]} />;
                 })}
               </Bar>

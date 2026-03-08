@@ -5,7 +5,7 @@ import { useParkingStore } from '@/lib/parking-store';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-const COLORS = ['hsl(252, 56%, 57%)', 'hsl(32, 95%, 55%)', 'hsl(200, 80%, 56%)'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--warning))'];
 
 export default function Dashboard() {
   const { slots, getActiveRecords, getTotalRevenue, getTodayRevenue, records, getVehicle, getSlot } = useParkingStore();
@@ -115,8 +115,8 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} dataKey="value" strokeWidth={4} stroke="hsl(var(--card))">
-                <Cell fill="hsl(252, 56%, 57%)" />
-                <Cell fill="hsl(32, 95%, 55%)" />
+                <Cell fill="hsl(var(--primary))" />
+                <Cell fill="hsl(var(--warning))" />
               </Pie>
             </PieChart>
           </ResponsiveContainer>
