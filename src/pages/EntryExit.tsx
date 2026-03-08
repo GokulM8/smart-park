@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParkingStore, BillPreview } from '@/lib/parking-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, CreditCard, IndianRupee, Car, Bike, Zap, ParkingSquare } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, Smartphone, IndianRupee, Car, Bike, Zap, ParkingSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
