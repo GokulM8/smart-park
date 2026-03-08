@@ -87,10 +87,7 @@ export default function TopNavbar() {
           <Search className="w-4 h-4" />
         </button>
         <SearchDialog open={searchOpen} onClose={() => setSearchOpen(o => !o)} />
-        <button className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative">
-          <Bell className="w-4 h-4" />
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-card" />
-        </button>
+        <NotificationDropdown />
 
         {/* Profile dropdown */}
         <div className="relative ml-2 pl-3 border-l border-border" ref={dropdownRef}>
