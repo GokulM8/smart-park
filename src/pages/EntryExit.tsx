@@ -28,7 +28,7 @@ function LiveDuration({ entryTime }: { entryTime: string }) {
 
 export default function EntryExit() {
   const { vehicles, slots, records, vehicleEntry, vehicleExit, calculateBill, getVehicle, getSlot } = useParkingStore();
-  const [vehicleSearch, setVehicleSearch] = useState('');
+  const [entrySearch, setEntrySearch] = useState('');
   const [exitRecordId, setExitRecordId] = useState<string | null>(null);
   const [bill, setBill] = useState<BillPreview | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi'>('cash');
@@ -36,18 +36,20 @@ export default function EntryExit() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const activeRecords = records.filter(r => !r.exitTime);
-  const matchedVehicle = vehicles.find(v => v.vehicleNumber.toLowerCase() === vehicleSearch.toLowerCase());
-  const isAlreadyParked = matchedVehicle && activeRecords.some(r => r.vehicleId === matchedVehicle.id);
-  const availableSlots = matchedVehicle ? slots.filter(s => s.status === 'available' && s.type === matchedVehicle.vehicleType) : [];
+  const parkedVehicleIds = new Set(activeRecords.map(r => r.vehicleId));
+  const availableVehicles = vehicles.filter(v => !parkedVehicleIds.has(v.id));
+  const filteredAvailable = availableVehicles.filter(v =>
+    !entrySearch || v.vehicleNumber.toLowerCase().includes(entrySearch.toLowerCase()) || v.ownerName.toLowerCase().includes(entrySearch.toLowerCase())
+  );
 
-  const handleEntry = () => {
-    if (!matchedVehicle) { toast.error('Vehicle not found. Register it first.'); return; }
-    if (isAlreadyParked) { toast.error('Vehicle is already parked.'); return; }
-    if (availableSlots.length === 0) { toast.error('No available slots for this vehicle type.'); return; }
-    const slot = availableSlots[0];
-    vehicleEntry(matchedVehicle.id, slot.id);
-    toast.success(`Vehicle ${matchedVehicle.vehicleNumber} parked at slot ${slot.number}`);
-    setVehicleSearch('');
+  const handleEntry = (vehicleId: string) => {
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    const freeSlots = slots.filter(s => s.status === 'available' && s.type === vehicle.vehicleType);
+    if (freeSlots.length === 0) { toast.error(`No available ${vehicle.vehicleType} slots.`); return; }
+    const slot = freeSlots[0];
+    vehicleEntry(vehicleId, slot.id);
+    toast.success(`${vehicle.vehicleNumber} → Slot ${slot.number}`);
   };
 
   const openPaymentDialog = (recordId: string) => {
