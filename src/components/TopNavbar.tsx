@@ -153,6 +153,13 @@ export default function TopNavbar() {
                     ))}
                   </div>
                   <div className="p-2 border-t border-border">
+                    <button
+                      onClick={() => { navigate('/settings'); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    >
+                      <UserCog className="w-4 h-4 text-muted-foreground" />
+                      Profile & Settings
+                    </button>
                     <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
                       <LogOut className="w-4 h-4" />
                       Sign Out
