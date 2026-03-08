@@ -200,7 +200,7 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
     if (!record) return null;
     const slot = state.slots.find(s => s.id === record.slotId);
     const duration = Math.max(1, Math.round((Date.now() - new Date(record.entryTime).getTime()) / 60000));
-    const rate = RATES[slot?.type || 'car'];
+    const rate = get().rates[slot?.type || 'car'];
     const amount = Math.ceil(duration / 60) * rate;
     return { vehicleId: record.vehicleId, slotId: record.slotId, entryTime: record.entryTime, duration, rate, amount, vehicleType: slot?.type || 'car' };
   },
