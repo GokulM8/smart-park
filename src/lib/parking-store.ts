@@ -101,7 +101,7 @@ const pastRecords: ParkingRecord[] = Array.from({ length: 20 }, (_, i) => {
     entryTime: entry.toISOString(),
     exitTime: new Date(entry.getTime() + dur * 60 * 1000).toISOString(),
     duration: dur,
-    amount: Math.ceil(dur / 60) * RATES[vType],
+    amount: Math.ceil(dur / 60) * DEFAULT_RATES[vType],
     paymentStatus: 'paid' as PaymentStatus,
   };
 });
