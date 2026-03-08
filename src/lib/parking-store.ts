@@ -120,12 +120,15 @@ interface ParkingStore {
   slots: ParkingSlot[];
   vehicles: Vehicle[];
   records: ParkingRecord[];
+  rates: Record<VehicleType, number>;
+  setRate: (type: VehicleType, rate: number) => void;
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
   calculateBill: (recordId: string) => BillPreview | null;
   getVehicle: (id: string) => Vehicle | undefined;
   getSlot: (id: string) => ParkingSlot | undefined;
+  getVehicleHistory: (vehicleId: string) => ParkingRecord[];
   getActiveRecords: () => ParkingRecord[];
   getTotalRevenue: () => number;
   getTodayRevenue: () => number;
