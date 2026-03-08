@@ -5,7 +5,7 @@ import { useParkingStore } from '@/lib/parking-store';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-const COLORS = ['hsl(252, 56%, 57%)', 'hsl(32, 95%, 55%)', 'hsl(200, 80%, 56%)'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--warning))'];
 
 export default function Dashboard() {
   const { slots, getActiveRecords, getTotalRevenue, getTodayRevenue, records, getVehicle, getSlot } = useParkingStore();
