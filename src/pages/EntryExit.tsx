@@ -109,28 +109,64 @@ export default function EntryExit() {
         <p className="text-muted-foreground mt-1">Manage vehicle check-in and check-out</p>
       </div>
 
-      {/* Entry section */}
+      {/* Entry section — list of available vehicles */}
       <div className="glass-card">
         <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
           <span className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center"><ArrowDownToLine className="w-4 h-4 text-success" /></span>
           Vehicle Entry
+          <span className="ml-auto text-xs font-normal text-muted-foreground">{availableVehicles.length} vehicles available</span>
         </h3>
-        <div className="flex gap-3 max-w-lg">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Enter vehicle number..." className="pl-10 rounded-xl" value={vehicleSearch} onChange={e => setVehicleSearch(e.target.value)} />
-          </div>
-          <Button className="rounded-xl" onClick={handleEntry} disabled={!matchedVehicle || !!isAlreadyParked}>
-            <ArrowDownToLine className="w-4 h-4 mr-2" /> Check In
-          </Button>
+
+        {/* Search filter */}
+        <div className="relative max-w-md mb-4">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Filter by name or number..." className="pl-10 rounded-xl" value={entrySearch} onChange={e => setEntrySearch(e.target.value)} />
         </div>
-        {matchedVehicle && !isAlreadyParked && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-3 p-3.5 rounded-xl bg-success/10 text-sm">
-            <span className="font-semibold">Found:</span> {matchedVehicle.ownerName} — {matchedVehicle.vehicleType.toUpperCase()} — {availableSlots.length} slots available
-          </motion.div>
-        )}
-        {matchedVehicle && isAlreadyParked && (
-          <p className="mt-3 text-sm text-warning font-medium">This vehicle is already parked.</p>
+
+        {/* Vehicle cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AnimatePresence>
+            {filteredAvailable.map(v => {
+              const Icon = vehicleIcons[v.vehicleType];
+              const freeSlots = slots.filter(s => s.status === 'available' && s.type === v.vehicleType);
+              return (
+                <motion.div
+                  key={v.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{v.ownerName}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{v.vehicleNumber}</p>
+                  </div>
+                  <div className="text-right mr-1 hidden sm:block">
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <ParkingSquare className="w-3 h-3" /> {freeSlots.length} slots
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="rounded-xl"
+                    disabled={freeSlots.length === 0}
+                    onClick={() => handleEntry(v.id)}
+                  >
+                    <ArrowDownToLine className="w-3.5 h-3.5 mr-1" /> Check In
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+        {filteredAvailable.length === 0 && (
+          <div className="py-8 text-center text-muted-foreground text-sm">
+            {availableVehicles.length === 0 ? 'All vehicles are currently parked' : 'No vehicles match your search'}
+          </div>
         )}
       </div>
 
