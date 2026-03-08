@@ -207,6 +207,7 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
 
   getVehicle: (id) => get().vehicles.find(v => v.id === id),
   getSlot: (id) => get().slots.find(s => s.id === id),
+  getVehicleHistory: (vehicleId) => get().records.filter(r => r.vehicleId === vehicleId && r.exitTime).sort((a, b) => new Date(b.exitTime!).getTime() - new Date(a.exitTime!).getTime()),
   getActiveRecords: () => get().records.filter(r => !r.exitTime),
   getTotalRevenue: () => get().records.filter(r => r.paymentStatus === 'paid').reduce((sum, r) => sum + (r.amount || 0), 0),
   getTodayRevenue: () => {
