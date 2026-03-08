@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown, Menu } from 'lucide-react';
+import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown, Menu, UserCog } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
@@ -153,6 +153,13 @@ export default function TopNavbar() {
                     ))}
                   </div>
                   <div className="p-2 border-t border-border">
+                    <button
+                      onClick={() => { navigate('/settings'); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    >
+                      <UserCog className="w-4 h-4 text-muted-foreground" />
+                      Profile & Settings
+                    </button>
                     <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -229,8 +236,15 @@ export default function TopNavbar() {
             ))}
           </div>
 
-          {/* Sign out */}
-          <div className="p-3 border-t border-border mt-auto">
+          {/* Settings & Sign out */}
+          <div className="p-3 border-t border-border mt-auto space-y-1">
+            <button
+              onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <UserCog className="w-4 h-4 text-muted-foreground" />
+              Profile & Settings
+            </button>
             <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
               <LogOut className="w-4 h-4" />
               Sign Out
