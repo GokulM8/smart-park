@@ -14,6 +14,8 @@ interface AuthStore {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   initialize: () => void;
+  updateProfile: (data: { name?: string; email?: string }) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 // Demo accounts stored in localStorage
