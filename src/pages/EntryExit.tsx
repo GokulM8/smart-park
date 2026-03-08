@@ -298,7 +298,7 @@ export default function EntryExit() {
                         </motion.div>
                       ) : (
                         <>
-                          <CreditCard className="w-5 h-5 mr-2" />
+                          <Smartphone className="w-5 h-5 mr-2" />
                           Pay ₹{bill.amount}
                         </>
                       )}
