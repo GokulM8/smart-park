@@ -14,6 +14,16 @@ const navItems = [
 
 export default function AppSidebar() {
   const location = useLocation();
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar-bg flex flex-col z-50">
