@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -13,6 +14,16 @@ const navItems = [
 
 export default function AppSidebar() {
   const location = useLocation();
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar-bg flex flex-col z-50">
@@ -44,7 +55,14 @@ export default function AppSidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-hover">
+      <div className="p-4 border-t border-sidebar-hover space-y-2">
+        <button
+          onClick={() => setDark(d => !d)}
+          className="nav-item w-full text-sidebar-fg hover:bg-sidebar-hover hover:text-primary-foreground"
+        >
+          {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {dark ? 'Light Mode' : 'Dark Mode'}
+        </button>
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">A</div>
           <div className="flex-1 min-w-0">
