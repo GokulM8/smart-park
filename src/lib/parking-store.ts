@@ -31,7 +31,7 @@ export interface ParkingRecord {
   paymentStatus: PaymentStatus;
 }
 
-const RATES: Record<VehicleType, number> = { car: 40, bike: 20, ev: 50 }; // per hour
+const DEFAULT_RATES: Record<VehicleType, number> = { car: 40, bike: 20, ev: 50 };
 
 const generateSlots = (): ParkingSlot[] => {
   const slots: ParkingSlot[] = [];
