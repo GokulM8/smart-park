@@ -31,7 +31,7 @@ export default function EntryExit() {
   const [entrySearch, setEntrySearch] = useState('');
   const [exitRecordId, setExitRecordId] = useState<string | null>(null);
   const [bill, setBill] = useState<BillPreview | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'phonepe'>('cash');
   const [processing, setProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
