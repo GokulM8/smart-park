@@ -20,7 +20,7 @@ export default {
   				'sans-serif'
   			],
   			body: [
-  				'DM Sans"',
+  				'DM Sans',
   				'system-ui',
   				'sans-serif'
   			],
