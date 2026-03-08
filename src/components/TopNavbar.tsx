@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
 import NotificationDropdown from './NotificationDropdown';
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
+import { useAuthStore } from '@/lib/auth-store';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
