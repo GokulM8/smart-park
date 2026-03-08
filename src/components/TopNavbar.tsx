@@ -181,11 +181,11 @@ export default function TopNavbar() {
           <div className="p-5 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
-                A
+                {userInitial}
               </div>
               <div>
-                <p className="text-sm font-semibold">Angie D</p>
-                <p className="text-xs text-muted-foreground">admin@park.io</p>
+                <p className="text-sm font-semibold">{userName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
                 <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
                   <Shield className="w-2.5 h-2.5" /> Administrator
                 </span>
