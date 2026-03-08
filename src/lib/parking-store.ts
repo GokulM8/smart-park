@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type VehicleType = 'car' | 'bike' | 'ev';
-export type SlotStatus = 'available' | 'occupied';
+export type SlotStatus = 'available' | 'occupied' | 'disabled';
 export type PaymentStatus = 'paid' | 'unpaid';
 
 export interface ParkingSlot {
