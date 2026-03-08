@@ -75,7 +75,7 @@ export default function SearchDialog({ open, onClose }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-card rounded-2xl border border-border shadow-2xl z-[101] overflow-hidden"
+            className="fixed top-[10%] sm:top-[15%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg bg-card rounded-2xl border border-border shadow-2xl z-[101] overflow-hidden"
           >
             <div className="flex items-center gap-3 p-4 border-b border-border">
               <Search className="w-5 h-5 text-muted-foreground shrink-0" />
