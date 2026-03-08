@@ -31,7 +31,7 @@ export interface ParkingRecord {
   paymentStatus: PaymentStatus;
 }
 
-const RATES: Record<VehicleType, number> = { car: 40, bike: 20, ev: 50 }; // per hour
+const DEFAULT_RATES: Record<VehicleType, number> = { car: 40, bike: 20, ev: 50 };
 
 const generateSlots = (): ParkingSlot[] => {
   const slots: ParkingSlot[] = [];
@@ -101,7 +101,7 @@ const pastRecords: ParkingRecord[] = Array.from({ length: 20 }, (_, i) => {
     entryTime: entry.toISOString(),
     exitTime: new Date(entry.getTime() + dur * 60 * 1000).toISOString(),
     duration: dur,
-    amount: Math.ceil(dur / 60) * RATES[vType],
+    amount: Math.ceil(dur / 60) * DEFAULT_RATES[vType],
     paymentStatus: 'paid' as PaymentStatus,
   };
 });
@@ -120,12 +120,15 @@ interface ParkingStore {
   slots: ParkingSlot[];
   vehicles: Vehicle[];
   records: ParkingRecord[];
+  rates: Record<VehicleType, number>;
+  setRate: (type: VehicleType, rate: number) => void;
   addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
   vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
   vehicleExit: (recordId: string) => ParkingRecord;
   calculateBill: (recordId: string) => BillPreview | null;
   getVehicle: (id: string) => Vehicle | undefined;
   getSlot: (id: string) => ParkingSlot | undefined;
+  getVehicleHistory: (vehicleId: string) => ParkingRecord[];
   getActiveRecords: () => ParkingRecord[];
   getTotalRevenue: () => number;
   getTodayRevenue: () => number;
@@ -137,6 +140,9 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
   slots: seedSlots,
   vehicles: seedVehicles,
   records: [...seedRecords, ...pastRecords],
+  rates: { ...DEFAULT_RATES },
+
+  setRate: (type, rate) => set(s => ({ rates: { ...s.rates, [type]: rate } })),
 
   addVehicle: (v) => {
     const vehicle: Vehicle = { ...v, id: `v${nextId++}` };
@@ -169,7 +175,7 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
     const slot = state.slots.find(s => s.id === record.slotId);
     const exitTime = new Date();
     const duration = Math.max(1, Math.round((exitTime.getTime() - new Date(record.entryTime).getTime()) / 60000));
-    const rate = RATES[slot?.type || 'car'];
+    const rate = get().rates[slot?.type || 'car'];
     const amount = Math.ceil(duration / 60) * rate;
 
     const updated: ParkingRecord = {
@@ -194,13 +200,14 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
     if (!record) return null;
     const slot = state.slots.find(s => s.id === record.slotId);
     const duration = Math.max(1, Math.round((Date.now() - new Date(record.entryTime).getTime()) / 60000));
-    const rate = RATES[slot?.type || 'car'];
+    const rate = get().rates[slot?.type || 'car'];
     const amount = Math.ceil(duration / 60) * rate;
     return { vehicleId: record.vehicleId, slotId: record.slotId, entryTime: record.entryTime, duration, rate, amount, vehicleType: slot?.type || 'car' };
   },
 
   getVehicle: (id) => get().vehicles.find(v => v.id === id),
   getSlot: (id) => get().slots.find(s => s.id === id),
+  getVehicleHistory: (vehicleId) => get().records.filter(r => r.vehicleId === vehicleId && r.exitTime).sort((a, b) => new Date(b.exitTime!).getTime() - new Date(a.exitTime!).getTime()),
   getActiveRecords: () => get().records.filter(r => !r.exitTime),
   getTotalRevenue: () => get().records.filter(r => r.paymentStatus === 'paid').reduce((sum, r) => sum + (r.amount || 0), 0),
   getTodayRevenue: () => {
