@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParkingStore, BillPreview } from '@/lib/parking-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, CreditCard, IndianRupee, Car, Bike, Zap } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, CreditCard, IndianRupee, Car, Bike, Zap, ParkingSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -28,7 +28,7 @@ function LiveDuration({ entryTime }: { entryTime: string }) {
 
 export default function EntryExit() {
   const { vehicles, slots, records, vehicleEntry, vehicleExit, calculateBill, getVehicle, getSlot } = useParkingStore();
-  const [vehicleSearch, setVehicleSearch] = useState('');
+  const [entrySearch, setEntrySearch] = useState('');
   const [exitRecordId, setExitRecordId] = useState<string | null>(null);
   const [bill, setBill] = useState<BillPreview | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi'>('cash');
@@ -36,18 +36,20 @@ export default function EntryExit() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const activeRecords = records.filter(r => !r.exitTime);
-  const matchedVehicle = vehicles.find(v => v.vehicleNumber.toLowerCase() === vehicleSearch.toLowerCase());
-  const isAlreadyParked = matchedVehicle && activeRecords.some(r => r.vehicleId === matchedVehicle.id);
-  const availableSlots = matchedVehicle ? slots.filter(s => s.status === 'available' && s.type === matchedVehicle.vehicleType) : [];
+  const parkedVehicleIds = new Set(activeRecords.map(r => r.vehicleId));
+  const availableVehicles = vehicles.filter(v => !parkedVehicleIds.has(v.id));
+  const filteredAvailable = availableVehicles.filter(v =>
+    !entrySearch || v.vehicleNumber.toLowerCase().includes(entrySearch.toLowerCase()) || v.ownerName.toLowerCase().includes(entrySearch.toLowerCase())
+  );
 
-  const handleEntry = () => {
-    if (!matchedVehicle) { toast.error('Vehicle not found. Register it first.'); return; }
-    if (isAlreadyParked) { toast.error('Vehicle is already parked.'); return; }
-    if (availableSlots.length === 0) { toast.error('No available slots for this vehicle type.'); return; }
-    const slot = availableSlots[0];
-    vehicleEntry(matchedVehicle.id, slot.id);
-    toast.success(`Vehicle ${matchedVehicle.vehicleNumber} parked at slot ${slot.number}`);
-    setVehicleSearch('');
+  const handleEntry = (vehicleId: string) => {
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    const freeSlots = slots.filter(s => s.status === 'available' && s.type === vehicle.vehicleType);
+    if (freeSlots.length === 0) { toast.error(`No available ${vehicle.vehicleType} slots.`); return; }
+    const slot = freeSlots[0];
+    vehicleEntry(vehicleId, slot.id);
+    toast.success(`${vehicle.vehicleNumber} → Slot ${slot.number}`);
   };
 
   const openPaymentDialog = (recordId: string) => {
@@ -107,28 +109,64 @@ export default function EntryExit() {
         <p className="text-muted-foreground mt-1">Manage vehicle check-in and check-out</p>
       </div>
 
-      {/* Entry section */}
+      {/* Entry section — list of available vehicles */}
       <div className="glass-card">
         <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
           <span className="w-8 h-8 rounded-xl bg-success/15 flex items-center justify-center"><ArrowDownToLine className="w-4 h-4 text-success" /></span>
           Vehicle Entry
+          <span className="ml-auto text-xs font-normal text-muted-foreground">{availableVehicles.length} vehicles available</span>
         </h3>
-        <div className="flex gap-3 max-w-lg">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Enter vehicle number..." className="pl-10 rounded-xl" value={vehicleSearch} onChange={e => setVehicleSearch(e.target.value)} />
-          </div>
-          <Button className="rounded-xl" onClick={handleEntry} disabled={!matchedVehicle || !!isAlreadyParked}>
-            <ArrowDownToLine className="w-4 h-4 mr-2" /> Check In
-          </Button>
+
+        {/* Search filter */}
+        <div className="relative max-w-md mb-4">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Filter by name or number..." className="pl-10 rounded-xl" value={entrySearch} onChange={e => setEntrySearch(e.target.value)} />
         </div>
-        {matchedVehicle && !isAlreadyParked && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-3 p-3.5 rounded-xl bg-success/10 text-sm">
-            <span className="font-semibold">Found:</span> {matchedVehicle.ownerName} — {matchedVehicle.vehicleType.toUpperCase()} — {availableSlots.length} slots available
-          </motion.div>
-        )}
-        {matchedVehicle && isAlreadyParked && (
-          <p className="mt-3 text-sm text-warning font-medium">This vehicle is already parked.</p>
+
+        {/* Vehicle cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AnimatePresence>
+            {filteredAvailable.map(v => {
+              const Icon = vehicleIcons[v.vehicleType];
+              const freeSlots = slots.filter(s => s.status === 'available' && s.type === v.vehicleType);
+              return (
+                <motion.div
+                  key={v.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{v.ownerName}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{v.vehicleNumber}</p>
+                  </div>
+                  <div className="text-right mr-1 hidden sm:block">
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <ParkingSquare className="w-3 h-3" /> {freeSlots.length} slots
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="rounded-xl"
+                    disabled={freeSlots.length === 0}
+                    onClick={() => handleEntry(v.id)}
+                  >
+                    <ArrowDownToLine className="w-3.5 h-3.5 mr-1" /> Check In
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+        {filteredAvailable.length === 0 && (
+          <div className="py-8 text-center text-muted-foreground text-sm">
+            {availableVehicles.length === 0 ? 'All vehicles are currently parked' : 'No vehicles match your search'}
+          </div>
         )}
       </div>
 
