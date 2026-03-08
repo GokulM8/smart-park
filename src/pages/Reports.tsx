@@ -80,7 +80,7 @@ export default function Reports() {
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
               <Bar dataKey="count" radius={[10, 10, 10, 10]}>
                 {typeStats.map((_, i) => {
-                  const fills = ['hsl(252, 56%, 57%)', 'hsl(32, 95%, 55%)', 'hsl(200, 80%, 56%)'];
+                  const fills = ['hsl(var(--lavender-foreground))', 'hsl(var(--warning))', 'hsl(var(--primary))'];
                   return <motion.rect key={i} fill={fills[i]} />;
                 })}
               </Bar>
