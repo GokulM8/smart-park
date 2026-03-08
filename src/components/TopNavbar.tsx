@@ -9,7 +9,7 @@ const navItems = [
   { to: '/entry-exit', label: 'Entry/Exit' },
   { to: '/billing', label: 'Billing' },
   { to: '/reports', label: 'Reports' },
-  { to: '/admin', label: 'Admin' },
+  
 ];
 
 export default function TopNavbar() {
