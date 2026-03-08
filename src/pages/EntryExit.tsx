@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParkingStore, BillPreview } from '@/lib/parking-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, CreditCard, IndianRupee, Car, Bike, Zap, ParkingSquare } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Search, Clock, Receipt, CheckCircle, Smartphone, IndianRupee, Car, Bike, Zap, ParkingSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -31,7 +31,7 @@ export default function EntryExit() {
   const [entrySearch, setEntrySearch] = useState('');
   const [exitRecordId, setExitRecordId] = useState<string | null>(null);
   const [bill, setBill] = useState<BillPreview | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'phonepe'>('cash');
   const [processing, setProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
@@ -258,8 +258,8 @@ export default function EntryExit() {
                     {/* Payment method */}
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {(['cash', 'card', 'upi'] as const).map(method => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['cash', 'phonepe'] as const).map(method => (
                           <button
                             key={method}
                             onClick={() => setPaymentMethod(method)}
@@ -270,9 +270,8 @@ export default function EntryExit() {
                             }`}
                           >
                             {method === 'cash' && <IndianRupee className="w-3.5 h-3.5 inline mr-1" />}
-                            {method === 'card' && <CreditCard className="w-3.5 h-3.5 inline mr-1" />}
-                            {method === 'upi' && '⚡ '}
-                            {method.charAt(0).toUpperCase() + method.slice(1)}
+                            {method === 'phonepe' && <Smartphone className="w-3.5 h-3.5 inline mr-1" />}
+                            {method === 'cash' ? 'Cash' : 'PhonePe'}
                           </button>
                         ))}
                       </div>
@@ -299,7 +298,7 @@ export default function EntryExit() {
                         </motion.div>
                       ) : (
                         <>
-                          <CreditCard className="w-5 h-5 mr-2" />
+                          <Smartphone className="w-5 h-5 mr-2" />
                           Pay ₹{bill.amount}
                         </>
                       )}
