@@ -236,8 +236,15 @@ export default function TopNavbar() {
             ))}
           </div>
 
-          {/* Sign out */}
-          <div className="p-3 border-t border-border mt-auto">
+          {/* Settings & Sign out */}
+          <div className="p-3 border-t border-border mt-auto space-y-1">
+            <button
+              onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <UserCog className="w-4 h-4 text-muted-foreground" />
+              Profile & Settings
+            </button>
             <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
               <LogOut className="w-4 h-4" />
               Sign Out
