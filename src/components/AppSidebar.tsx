@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
