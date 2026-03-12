@@ -1,7 +1,7 @@
 import { useParkingStore, VehicleType } from '@/lib/parking-store';
 import { Car, Bike, Zap, Plus, Trash2, Ban, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -16,12 +16,14 @@ const typeColors = {
 };
 
 export default function ParkingSlots() {
-  const { slots, addSlot, removeSlot, toggleSlotDisabled } = useParkingStore();
+  const { slots, addSlot, removeSlot, toggleSlotDisabled, initialize } = useParkingStore();
   const [filter, setFilter] = useState<'all' | 'car' | 'bike' | 'ev'>('all');
   const [floorFilter, setFloorFilter] = useState<number>(0);
   const [addOpen, setAddOpen] = useState(false);
   const [newSlot, setNewSlot] = useState({ number: '', type: 'car' as VehicleType, floor: 1 });
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const filtered = slots.filter(s => {
     if (filter !== 'all' && s.type !== filter) return false;
@@ -32,32 +34,45 @@ export default function ParkingSlots() {
   const floors = [...new Set(slots.map(s => s.floor))].sort();
   const selectedSlot = selectedSlotId ? slots.find(s => s.id === selectedSlotId) : null;
 
-  const handleAddSlot = () => {
+  const handleAddSlot = async () => {
     if (!newSlot.number.trim()) { toast.error('Enter a slot number'); return; }
     if (slots.some(s => s.number === newSlot.number.trim())) { toast.error('Slot number already exists'); return; }
-    addSlot({ number: newSlot.number.trim(), type: newSlot.type, floor: newSlot.floor });
-    toast.success(`Slot ${newSlot.number} added`);
-    setNewSlot({ number: '', type: 'car', floor: 1 });
-    setAddOpen(false);
-  };
-
-  const handleRemove = () => {
-    if (!selectedSlotId) return;
-    const success = removeSlot(selectedSlotId);
-    if (success) {
-      toast.success(`Slot ${selectedSlot?.number} removed`);
-      setSelectedSlotId(null);
-    } else {
-      toast.error('Cannot remove — slot has an active session');
+    try {
+      await addSlot({ number: newSlot.number.trim(), type: newSlot.type, floor: newSlot.floor });
+      toast.success(`Slot ${newSlot.number} added`);
+      setNewSlot({ number: '', type: 'car', floor: 1 });
+      setAddOpen(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add slot';
+      toast.error(message);
     }
   };
 
-  const handleToggleDisable = () => {
+  const handleRemove = async () => {
     if (!selectedSlotId) return;
-    toggleSlotDisabled(selectedSlotId);
-    const slot = slots.find(s => s.id === selectedSlotId);
-    toast.success(`Slot ${slot?.number} ${slot?.status === 'disabled' ? 'enabled' : 'disabled'}`);
-    setSelectedSlotId(null);
+    try {
+      const success = await removeSlot(selectedSlotId);
+      if (success) {
+        toast.success(`Slot ${selectedSlot?.number} removed`);
+        setSelectedSlotId(null);
+      } else {
+        toast.error('Cannot remove — slot has an active session');
+      }
+    } catch {
+      toast.error('Failed to remove slot');
+    }
+  };
+
+  const handleToggleDisable = async () => {
+    if (!selectedSlotId) return;
+    try {
+      const slot = slots.find(s => s.id === selectedSlotId);
+      await toggleSlotDisabled(selectedSlotId);
+      toast.success(`Slot ${slot?.number} ${slot?.status === 'disabled' ? 'enabled' : 'disabled'}`);
+      setSelectedSlotId(null);
+    } catch {
+      toast.error('Failed to update slot');
+    }
   };
 
   return (

@@ -1,11 +1,11 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown, Menu, UserCog } from 'lucide-react';
+import { Car, ParkingSquare, Search, Moon, Sun, Settings, Users, BarChart3, LogOut, Shield, ChevronDown, Menu, UserCog } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchDialog from './SearchDialog';
 import NotificationDropdown from './NotificationDropdown';
 import { Sheet, SheetContent, SheetTitle } from './ui/sheet';
-import { useAuthStore } from '@/lib/auth-store';
+import { useAuthStore } from '@/lib/supabase-auth-store';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
@@ -57,17 +57,17 @@ export default function TopNavbar() {
 
   return (
     <>
-      <header className="glass-surface !rounded-2xl !p-3 mx-4 sm:mx-6 mt-4 mb-6 flex items-center justify-between sticky top-4 z-50">
+      <header className="glass-surface !rounded-2xl !p-3 mx-4 sm:mx-6 mt-4 mb-6 flex items-center justify-between sticky top-4 z-50" role="banner">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mr-1">
+          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mr-1" aria-hidden="true">
             <ParkingSquare className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-lg font-display font-bold mr-2 lg:mr-6">ParkSmart</span>
         </div>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
           {navItems.map(item => {
             const isActive = location.pathname === item.to;
             return (
@@ -79,6 +79,7 @@ export default function TopNavbar() {
                     ? 'bg-primary text-primary-foreground shadow-md'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}
+                aria-current={isActive ? 'page' : undefined}
               >
                 {item.label}
               </NavLink>
@@ -91,10 +92,15 @@ export default function TopNavbar() {
           <button
             onClick={() => setDark(d => !d)}
             className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button onClick={() => setSearchOpen(true)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+          <button 
+            onClick={() => setSearchOpen(true)} 
+            className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Open search"
+          >
             <Search className="w-4 h-4" />
           </button>
           <SearchDialog open={searchOpen} onClose={() => setSearchOpen(o => !o)} />
@@ -105,15 +111,18 @@ export default function TopNavbar() {
             <button
               onClick={() => setProfileOpen(o => !o)}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              aria-label="User profile menu"
+              aria-expanded={profileOpen}
+              aria-haspopup="true"
             >
               <div className="hidden lg:block text-right">
                 <p className="text-sm font-semibold leading-tight">{userName}</p>
                 <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20" aria-hidden="true">
                 {userInitial}
               </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
 
             <AnimatePresence>
@@ -124,17 +133,18 @@ export default function TopNavbar() {
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
                   className="absolute right-0 top-full mt-3 w-64 bg-card rounded-2xl border border-border shadow-xl overflow-hidden z-50"
+                  role="menu"
                 >
                   <div className="p-4 bg-muted/50 border-b border-border">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20" aria-hidden="true">
                         {userInitial}
                       </div>
                       <div>
                         <p className="text-sm font-semibold">{userName}</p>
                         <p className="text-xs text-muted-foreground">{userEmail}</p>
                         <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
-                          <Shield className="w-2.5 h-2.5" /> Administrator
+                          <Shield className="w-2.5 h-2.5" aria-hidden="true" /> Administrator
                         </span>
                       </div>
                     </div>
@@ -146,8 +156,9 @@ export default function TopNavbar() {
                         key={item.label}
                         onClick={() => { navigate(item.to); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        role="menuitem"
                       >
-                        <item.icon className="w-4 h-4 text-muted-foreground" />
+                        <item.icon className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                         {item.label}
                       </button>
                     ))}
@@ -174,6 +185,9 @@ export default function TopNavbar() {
           <button
             onClick={() => setMobileMenuOpen(true)}
             className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors lg:hidden"
+            aria-label="Open navigation menu"
+            aria-expanded={mobileMenuOpen}
+            aria-haspopup="true"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -187,21 +201,21 @@ export default function TopNavbar() {
           {/* Profile header */}
           <div className="p-5 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-sm font-bold text-primary-foreground ring-2 ring-primary/20" aria-hidden="true">
                 {userInitial}
               </div>
               <div>
                 <p className="text-sm font-semibold">{userName}</p>
                 <p className="text-xs text-muted-foreground">{userEmail}</p>
                 <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold">
-                  <Shield className="w-2.5 h-2.5" /> Administrator
+                  <Shield className="w-2.5 h-2.5" aria-hidden="true" /> Administrator
                 </span>
               </div>
             </div>
           </div>
 
           {/* Nav links */}
-          <nav className="p-3 space-y-1">
+          <nav className="p-3 space-y-1" aria-label="Mobile navigation">
             {navItems.map(item => {
               const isActive = location.pathname === item.to;
               return (
@@ -214,6 +228,7 @@ export default function TopNavbar() {
                       ? 'bg-primary text-primary-foreground shadow-md'
                       : 'text-foreground hover:bg-muted'
                   }`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   {item.label}
                 </NavLink>
@@ -229,8 +244,9 @@ export default function TopNavbar() {
                 key={item.label}
                 onClick={() => { navigate(item.to); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                role="menuitem"
               >
-                <item.icon className="w-4 h-4 text-muted-foreground" />
+                <item.icon className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 {item.label}
               </button>
             ))}
@@ -241,12 +257,13 @@ export default function TopNavbar() {
             <button
               onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              role="menuitem"
             >
-              <UserCog className="w-4 h-4 text-muted-foreground" />
+              <UserCog className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
               Profile & Settings
             </button>
-            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
-              <LogOut className="w-4 h-4" />
+            <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors" role="menuitem">
+              <LogOut className="w-4 h-4" aria-hidden="true" />
               Sign Out
             </button>
           </div>

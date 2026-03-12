@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Car, ParkingSquare, DollarSign, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import StatCard from '@/components/StatCard';
@@ -8,7 +9,9 @@ import { Link } from 'react-router-dom';
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--warning))'];
 
 export default function Dashboard() {
-  const { slots, getActiveRecords, getTotalRevenue, getTodayRevenue, records, getVehicle, getSlot } = useParkingStore();
+  const { slots, getActiveRecords, getTotalRevenue, getTodayRevenue, records, getVehicle, getSlot, initialize } = useParkingStore();
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const totalSlots = slots.length;
   const occupiedSlots = slots.filter(s => s.status === 'occupied').length;

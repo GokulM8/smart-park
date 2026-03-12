@@ -26,10 +26,10 @@ export default function AppSidebar() {
   }, [dark]);
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar-bg flex flex-col z-50">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar-bg flex flex-col z-50" aria-label="Main navigation">
       <div className="p-6 border-b border-sidebar-hover">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center" aria-hidden="true">
             <ParkingSquare className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
@@ -39,7 +39,7 @@ export default function AppSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Main menu">
         {navItems.map(item => {
           const isActive = location.pathname === item.to;
           return (
@@ -47,8 +47,10 @@ export default function AppSidebar() {
               key={item.to}
               to={item.to}
               className={`nav-item ${isActive ? 'bg-primary/15 text-primary' : 'text-sidebar-fg hover:bg-sidebar-hover hover:text-primary-foreground'}`}
+              aria-current={isActive ? 'page' : undefined}
+              title={item.label}
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-5 h-5" aria-hidden="true" />
               {item.label}
             </NavLink>
           );
@@ -59,17 +61,20 @@ export default function AppSidebar() {
         <button
           onClick={() => setDark(d => !d)}
           className="nav-item w-full text-sidebar-fg hover:bg-sidebar-hover hover:text-primary-foreground"
+          aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           {dark ? 'Light Mode' : 'Dark Mode'}
         </button>
         <div className="flex items-center gap-3 px-4 py-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">A</div>
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary" aria-hidden="true">A</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-primary-foreground truncate">Admin User</p>
             <p className="text-xs text-sidebar-fg/60">Administrator</p>
           </div>
-          <LogOut className="w-4 h-4 text-sidebar-fg/60 cursor-pointer hover:text-primary" />
+          <button aria-label="Logout" className="p-1 hover:bg-sidebar-hover rounded transition">
+            <LogOut className="w-4 h-4 text-sidebar-fg/60 hover:text-primary" />
+          </button>
         </div>
       </div>
     </aside>

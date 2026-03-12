@@ -1,10 +1,13 @@
+import { useEffect } from 'react';
 import { useParkingStore } from '@/lib/parking-store';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from 'recharts';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
 export default function Reports() {
-  const { records, slots, getVehicle } = useParkingStore();
+  const { records, slots, getVehicle, initialize } = useParkingStore();
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const completedRecords = records.filter(r => r.exitTime && r.paymentStatus === 'paid');
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock, Save, Eye, EyeOff } from 'lucide-react';
-import { useAuthStore } from '@/lib/auth-store';
+import { useAuthStore } from '@/lib/supabase-auth-store';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -34,8 +34,9 @@ export default function Settings() {
     try {
       await updateProfile({ name: name.trim(), email: email.trim() });
       toast({ title: 'Profile updated', description: 'Your changes have been saved.' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update profile';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
       setProfileSaving(false);
     }
@@ -58,8 +59,9 @@ export default function Settings() {
       setCurrentPw('');
       setNewPw('');
       setConfirmPw('');
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to change password';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
       setPwSaving(false);
     }

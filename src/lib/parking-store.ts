@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase } from './supabase';
 
 export type VehicleType = 'car' | 'bike' | 'ev';
 export type SlotStatus = 'available' | 'occupied' | 'disabled';
@@ -24,6 +25,7 @@ export interface ParkingRecord {
   id: string;
   vehicleId: string;
   slotId: string;
+  slotNumber?: string;
   entryTime: string;
   exitTime: string | null;
   duration: number | null; // minutes
@@ -33,78 +35,43 @@ export interface ParkingRecord {
 
 const DEFAULT_RATES: Record<VehicleType, number> = { car: 40, bike: 20, ev: 50 };
 
-const generateSlots = (): ParkingSlot[] => {
-  const slots: ParkingSlot[] = [];
-  const types: VehicleType[] = ['car', 'bike', 'ev'];
-  let id = 1;
-  for (let floor = 1; floor <= 2; floor++) {
-    for (const type of types) {
-      const count = type === 'car' ? 8 : type === 'bike' ? 6 : 4;
-      for (let i = 1; i <= count; i++) {
-        const prefix = type === 'car' ? 'C' : type === 'bike' ? 'B' : 'E';
-        slots.push({
-          id: String(id++),
-          number: `${floor}${prefix}${String(i).padStart(2, '0')}`,
-          type,
-          status: 'available',
-          floor,
-        });
-      }
-    }
-  }
-  return slots;
-};
-
-// Seed some demo data
-const seedSlots = generateSlots();
-// Occupy some slots
-const occupiedIds = ['1', '3', '5', '9', '12', '15', '19', '22', '25', '30'];
-occupiedIds.forEach(id => {
-  const s = seedSlots.find(s => s.id === id);
-  if (s) s.status = 'occupied';
-});
-
-const seedVehicles: Vehicle[] = [
-  { id: 'v1', vehicleNumber: 'KA-01-AB-1234', vehicleType: 'car', ownerName: 'Rahul Sharma', contactNumber: '9876543210' },
-  { id: 'v2', vehicleNumber: 'KA-02-CD-5678', vehicleType: 'bike', ownerName: 'Priya Patel', contactNumber: '9876543211' },
-  { id: 'v3', vehicleNumber: 'KA-03-EV-9012', vehicleType: 'ev', ownerName: 'Amit Kumar', contactNumber: '9876543212' },
-  { id: 'v4', vehicleNumber: 'MH-04-FG-3456', vehicleType: 'car', ownerName: 'Sneha Reddy', contactNumber: '9876543213' },
-  { id: 'v5', vehicleNumber: 'TN-05-HI-7890', vehicleType: 'bike', ownerName: 'Karthik Nair', contactNumber: '9876543214' },
-  { id: 'v6', vehicleNumber: 'DL-06-JK-2345', vehicleType: 'car', ownerName: 'Meera Singh', contactNumber: '9876543215' },
-  { id: 'v7', vehicleNumber: 'GJ-07-LM-6789', vehicleType: 'ev', ownerName: 'Vikram Joshi', contactNumber: '9876543216' },
-  { id: 'v8', vehicleNumber: 'RJ-08-NO-0123', vehicleType: 'car', ownerName: 'Ananya Das', contactNumber: '9876543217' },
-  { id: 'v9', vehicleNumber: 'UP-09-PQ-4567', vehicleType: 'bike', ownerName: 'Rohan Gupta', contactNumber: '9876543218' },
-  { id: 'v10', vehicleNumber: 'KL-10-RS-8901', vehicleType: 'car', ownerName: 'Divya Menon', contactNumber: '9876543219' },
-];
-
-const now = new Date();
-const seedRecords: ParkingRecord[] = occupiedIds.map((slotId, i) => ({
-  id: `r${i + 1}`,
-  vehicleId: seedVehicles[i]?.id || 'v1',
-  slotId,
-  entryTime: new Date(now.getTime() - Math.random() * 4 * 60 * 60 * 1000).toISOString(),
-  exitTime: null,
-  duration: null,
-  amount: null,
-  paymentStatus: 'unpaid' as PaymentStatus,
-}));
-
-// Add some completed records for revenue
-const pastRecords: ParkingRecord[] = Array.from({ length: 20 }, (_, i) => {
-  const entry = new Date(now.getTime() - (i + 1) * 24 * 60 * 60 * 1000 - Math.random() * 8 * 60 * 60 * 1000);
-  const dur = Math.floor(30 + Math.random() * 300);
-  const vType = ['car', 'bike', 'ev'][i % 3] as VehicleType;
+// ── Mappers: Supabase row (snake_case) → local type (camelCase) ─────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapVehicle(row: Record<string, any>): Vehicle {
   return {
-    id: `rp${i + 1}`,
-    vehicleId: seedVehicles[i % seedVehicles.length].id,
-    slotId: String((i % seedSlots.length) + 1),
-    entryTime: entry.toISOString(),
-    exitTime: new Date(entry.getTime() + dur * 60 * 1000).toISOString(),
-    duration: dur,
-    amount: Math.ceil(dur / 60) * DEFAULT_RATES[vType],
-    paymentStatus: 'paid' as PaymentStatus,
+    id: row.id as string,
+    vehicleNumber: row.vehicle_number as string,
+    vehicleType: row.vehicle_type as VehicleType,
+    ownerName: row.owner_name as string,
+    contactNumber: (row.contact_number as string) ?? '',
   };
-});
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapSlot(row: Record<string, any>): ParkingSlot {
+  return {
+    id: row.id as string,
+    number: row.number as string,
+    type: row.type as VehicleType,
+    status: row.status as SlotStatus,
+    floor: row.floor as number,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapRecord(row: Record<string, any>): ParkingRecord {
+  return {
+    id: row.id as string,
+    vehicleId: row.vehicle_id as string,
+    slotId: row.slot_id as string,
+    slotNumber: (row.park_slots?.number as string | undefined) ?? undefined,
+    entryTime: row.entry_time as string,
+    exitTime: (row.exit_time as string | null) ?? null,
+    duration: (row.duration as number | null) ?? null,
+    amount: row.amount != null ? Number(row.amount) : null,
+    paymentStatus: row.payment_status as PaymentStatus,
+  };
+}
 
 export interface BillPreview {
   vehicleId: string;
@@ -121,13 +88,17 @@ interface ParkingStore {
   vehicles: Vehicle[];
   records: ParkingRecord[];
   rates: Record<VehicleType, number>;
+  loading: boolean;
+  initialized: boolean;
+  initializedForUserId: string | null;
+  initialize: () => Promise<void>;
   setRate: (type: VehicleType, rate: number) => void;
-  addSlot: (slot: Omit<ParkingSlot, 'id' | 'status'>) => ParkingSlot;
-  removeSlot: (slotId: string) => boolean;
-  toggleSlotDisabled: (slotId: string) => void;
-  addVehicle: (v: Omit<Vehicle, 'id'>) => Vehicle;
-  vehicleEntry: (vehicleId: string, slotId: string) => ParkingRecord;
-  vehicleExit: (recordId: string) => ParkingRecord;
+  addSlot: (slot: Omit<ParkingSlot, 'id' | 'status'>) => Promise<ParkingSlot>;
+  removeSlot: (slotId: string) => Promise<boolean>;
+  toggleSlotDisabled: (slotId: string) => Promise<void>;
+  addVehicle: (v: Omit<Vehicle, 'id'>) => Promise<Vehicle>;
+  vehicleEntry: (vehicleId: string, slotId: string) => Promise<ParkingRecord>;
+  vehicleExit: (recordId: string) => Promise<ParkingRecord>;
   calculateBill: (recordId: string) => BillPreview | null;
   getVehicle: (id: string) => Vehicle | undefined;
   getSlot: (id: string) => ParkingSlot | undefined;
@@ -137,109 +108,230 @@ interface ParkingStore {
   getTodayRevenue: () => number;
 }
 
-let nextId = 100;
+// Helper: typed Supabase access for tables not in generated Database types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
+async function getAuthenticatedUserId(): Promise<string> {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!user) throw new Error('Not authenticated');
+  return user.id;
+}
 
 export const useParkingStore = create<ParkingStore>((set, get) => ({
-  slots: seedSlots,
-  vehicles: seedVehicles,
-  records: [...seedRecords, ...pastRecords],
+  slots: [],
+  vehicles: [],
+  records: [],
   rates: { ...DEFAULT_RATES },
+  loading: false,
+  initialized: false,
+  initializedForUserId: null,
+
+  // ── Load all data from Supabase ────────────────────────────────────────────
+  initialize: async () => {
+    const userId = await getAuthenticatedUserId();
+    if (get().initialized && get().initializedForUserId === userId) return;
+
+    set({ loading: true });
+    try {
+      const [slotsRes, vehiclesRes] = await Promise.all([
+        db.from('park_slots').select('*').eq('user_id', userId).order('floor').order('number'),
+        db.from('park_vehicles').select('*').eq('user_id', userId).order('created_at'),
+      ]);
+
+      if (slotsRes.error) { console.error('[park_slots]', slotsRes.error); throw new Error(slotsRes.error.message); }
+      if (vehiclesRes.error) { console.error('[park_vehicles]', vehiclesRes.error); throw new Error(vehiclesRes.error.message); }
+
+      const vehicles = (vehiclesRes.data ?? []).map(mapVehicle);
+      const vehicleIds = vehicles.map(vehicle => vehicle.id);
+
+      const recordsRes = vehicleIds.length > 0
+        ? await db
+            .from('park_records')
+            .select('*, park_slots(number, type)')
+            .in('vehicle_id', vehicleIds)
+            .order('entry_time', { ascending: false })
+        : { data: [], error: null };
+
+      if (recordsRes.error) { console.error('[park_records]', recordsRes.error); throw new Error(recordsRes.error.message); }
+
+      set({
+        slots: (slotsRes.data ?? []).map(mapSlot),
+        vehicles,
+        records: (recordsRes.data ?? []).map(mapRecord),
+        initialized: true,
+        initializedForUserId: userId,
+      });
+    } catch (err) {
+      console.error('[parking-store] initialize error:', err);
+    } finally {
+      set({ loading: false });
+    }
+  },
 
   setRate: (type, rate) => set(s => ({ rates: { ...s.rates, [type]: rate } })),
 
-  addSlot: (slot) => {
-    const newSlot: ParkingSlot = { ...slot, id: String(nextId++), status: 'available' };
+  // ── Slots ──────────────────────────────────────────────────────────────────
+  addSlot: async (slot) => {
+    const userId = await getAuthenticatedUserId();
+
+    const { data, error } = await db
+      .from('park_slots')
+      .insert({ user_id: userId, number: slot.number, type: slot.type, floor: slot.floor, status: 'available' })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    const newSlot = mapSlot(data);
     set(s => ({ slots: [...s.slots, newSlot] }));
     return newSlot;
   },
 
-  removeSlot: (slotId) => {
-    const state = get();
-    const hasActive = state.records.some(r => r.slotId === slotId && !r.exitTime);
+  removeSlot: async (slotId) => {
+    const userId = await getAuthenticatedUserId();
+    const hasActive = get().records.some(r => r.slotId === slotId && !r.exitTime);
     if (hasActive) return false;
+    const { error } = await db.from('park_slots').delete().eq('id', slotId).eq('user_id', userId);
+    if (error) throw new Error(error.message);
     set(s => ({ slots: s.slots.filter(sl => sl.id !== slotId) }));
     return true;
   },
 
-  toggleSlotDisabled: (slotId) => {
+  toggleSlotDisabled: async (slotId) => {
+    const userId = await getAuthenticatedUserId();
+    const slot = get().slots.find(sl => sl.id === slotId);
+    if (!slot || slot.status === 'occupied') return;
+    const newStatus: SlotStatus = slot.status === 'disabled' ? 'available' : 'disabled';
+    const { error } = await db.from('park_slots').update({ status: newStatus }).eq('id', slotId).eq('user_id', userId);
+    if (error) throw new Error(error.message);
     set(s => ({
-      slots: s.slots.map(sl => {
-        if (sl.id !== slotId || sl.status === 'occupied') return sl;
-        return { ...sl, status: sl.status === 'disabled' ? 'available' as SlotStatus : 'disabled' as SlotStatus };
-      }),
+      slots: s.slots.map(sl => sl.id === slotId ? { ...sl, status: newStatus } : sl),
     }));
   },
 
-  addVehicle: (v) => {
-    const vehicle: Vehicle = { ...v, id: `v${nextId++}` };
+  // ── Vehicles ───────────────────────────────────────────────────────────────
+  addVehicle: async (v) => {
+    const userId = await getAuthenticatedUserId();
+
+    const { data, error } = await db
+      .from('park_vehicles')
+      .insert({
+        user_id: userId,
+        vehicle_number: v.vehicleNumber,
+        vehicle_type: v.vehicleType,
+        owner_name: v.ownerName,
+        contact_number: v.contactNumber,
+      })
+      .select()
+      .single();
+    if (error) { console.error('[park_vehicles insert]', error); throw new Error(error.message); }
+    const vehicle = mapVehicle(data);
     set(s => ({ vehicles: [...s.vehicles, vehicle] }));
     return vehicle;
   },
 
-  vehicleEntry: (vehicleId, slotId) => {
-    const record: ParkingRecord = {
-      id: `r${nextId++}`,
-      vehicleId,
-      slotId,
-      entryTime: new Date().toISOString(),
-      exitTime: null,
-      duration: null,
-      amount: null,
-      paymentStatus: 'unpaid',
-    };
+  // ── Records ────────────────────────────────────────────────────────────────
+  vehicleEntry: async (vehicleId, slotId) => {
+    const userId = await getAuthenticatedUserId();
+
+    const vehicle = get().vehicles.find(item => item.id === vehicleId);
+    if (!vehicle) throw new Error('Vehicle not found for current user');
+
+    const slot = get().slots.find(item => item.id === slotId);
+    if (!slot) throw new Error('Slot not found for current user');
+
+    const { data, error } = await db
+      .from('park_records')
+      .insert({ vehicle_id: vehicleId, slot_id: slotId, entry_time: new Date().toISOString(), payment_status: 'unpaid' })
+      .select('*, park_slots(number, type)')
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { error: slotErr } = await db.from('park_slots').update({ status: 'occupied' }).eq('id', slotId).eq('user_id', userId);
+    if (slotErr) throw new Error(slotErr.message);
+
+    const record = mapRecord(data);
     set(s => ({
-      records: [...s.records, record],
+      records: [record, ...s.records],
       slots: s.slots.map(sl => sl.id === slotId ? { ...sl, status: 'occupied' as SlotStatus } : sl),
     }));
     return record;
   },
 
-  vehicleExit: (recordId) => {
+  vehicleExit: async (recordId) => {
+    const userId = await getAuthenticatedUserId();
     const state = get();
     const record = state.records.find(r => r.id === recordId);
     if (!record) throw new Error('Record not found');
+
     const slot = state.slots.find(s => s.id === record.slotId);
     const exitTime = new Date();
     const duration = Math.max(1, Math.round((exitTime.getTime() - new Date(record.entryTime).getTime()) / 60000));
-    const rate = get().rates[slot?.type || 'car'];
+    const rate = get().rates[slot?.type ?? 'car'];
     const amount = Math.ceil(duration / 60) * rate;
 
-    const updated: ParkingRecord = {
-      ...record,
-      exitTime: exitTime.toISOString(),
-      duration,
-      amount,
-      paymentStatus: 'paid',
-    };
+    const { data, error } = await db
+      .from('park_records')
+      .update({ exit_time: exitTime.toISOString(), duration, amount, payment_status: 'paid' })
+      .eq('id', recordId)
+      .select('*, park_slots(number, type)')
+      .single();
+    if (error) throw new Error(error.message);
 
+    const { error: slotErr } = await db.from('park_slots').update({ status: 'available' }).eq('id', record.slotId).eq('user_id', userId);
+    if (slotErr) throw new Error(slotErr.message);
+
+    const updated = mapRecord(data);
     set(s => ({
       records: s.records.map(r => r.id === recordId ? updated : r),
       slots: s.slots.map(sl => sl.id === record.slotId ? { ...sl, status: 'available' as SlotStatus } : sl),
     }));
-
     return updated;
   },
 
+  // ── Sync helpers ───────────────────────────────────────────────────────────
   calculateBill: (recordId) => {
     const state = get();
     const record = state.records.find(r => r.id === recordId);
     if (!record) return null;
     const slot = state.slots.find(s => s.id === record.slotId);
     const duration = Math.max(1, Math.round((Date.now() - new Date(record.entryTime).getTime()) / 60000));
-    const rate = get().rates[slot?.type || 'car'];
+    const rate = get().rates[slot?.type ?? 'car'];
     const amount = Math.ceil(duration / 60) * rate;
-    return { vehicleId: record.vehicleId, slotId: record.slotId, entryTime: record.entryTime, duration, rate, amount, vehicleType: slot?.type || 'car' };
+    return { vehicleId: record.vehicleId, slotId: record.slotId, entryTime: record.entryTime, duration, rate, amount, vehicleType: slot?.type ?? 'car' };
   },
 
   getVehicle: (id) => get().vehicles.find(v => v.id === id),
   getSlot: (id) => get().slots.find(s => s.id === id),
-  getVehicleHistory: (vehicleId) => get().records.filter(r => r.vehicleId === vehicleId && r.exitTime).sort((a, b) => new Date(b.exitTime!).getTime() - new Date(a.exitTime!).getTime()),
+  getVehicleHistory: (vehicleId) =>
+    get().records
+      .filter(r => r.vehicleId === vehicleId && r.exitTime)
+      .sort((a, b) => new Date(b.exitTime!).getTime() - new Date(a.exitTime!).getTime()),
   getActiveRecords: () => get().records.filter(r => !r.exitTime),
-  getTotalRevenue: () => get().records.filter(r => r.paymentStatus === 'paid').reduce((sum, r) => sum + (r.amount || 0), 0),
+  getTotalRevenue: () =>
+    get().records.filter(r => r.paymentStatus === 'paid').reduce((sum, r) => sum + (r.amount ?? 0), 0),
   getTodayRevenue: () => {
     const today = new Date().toDateString();
     return get().records
       .filter(r => r.paymentStatus === 'paid' && r.exitTime && new Date(r.exitTime).toDateString() === today)
-      .reduce((sum, r) => sum + (r.amount || 0), 0);
+      .reduce((sum, r) => sum + (r.amount ?? 0), 0);
   },
 }));
+
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  useParkingStore.setState(state => ({
+    slots: session?.user ? state.slots : [],
+    vehicles: [],
+    records: [],
+    loading: false,
+    initialized: false,
+    initializedForUserId: session?.user?.id ?? null,
+  }));
+});
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    subscription.unsubscribe();
+  });
+}
+

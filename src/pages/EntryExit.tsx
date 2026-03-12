@@ -27,13 +27,15 @@ function LiveDuration({ entryTime }: { entryTime: string }) {
 }
 
 export default function EntryExit() {
-  const { vehicles, slots, records, vehicleEntry, vehicleExit, calculateBill, getVehicle, getSlot } = useParkingStore();
+  const { vehicles, slots, records, vehicleEntry, vehicleExit, calculateBill, getVehicle, getSlot, initialize } = useParkingStore();
   const [entrySearch, setEntrySearch] = useState('');
   const [exitRecordId, setExitRecordId] = useState<string | null>(null);
   const [bill, setBill] = useState<BillPreview | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'phonepe'>('cash');
   const [processing, setProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const activeRecords = records.filter(r => !r.exitTime);
   const parkedVehicleIds = new Set(activeRecords.map(r => r.vehicleId));
@@ -42,14 +44,18 @@ export default function EntryExit() {
     !entrySearch || v.vehicleNumber.toLowerCase().includes(entrySearch.toLowerCase()) || v.ownerName.toLowerCase().includes(entrySearch.toLowerCase())
   );
 
-  const handleEntry = (vehicleId: string) => {
+  const handleEntry = async (vehicleId: string) => {
     const vehicle = vehicles.find(v => v.id === vehicleId);
     if (!vehicle) return;
     const freeSlots = slots.filter(s => s.status === 'available' && s.type === vehicle.vehicleType);
     if (freeSlots.length === 0) { toast.error(`No available ${vehicle.vehicleType} slots.`); return; }
     const slot = freeSlots[0];
-    vehicleEntry(vehicleId, slot.id);
-    toast.success(`${vehicle.vehicleNumber} → Slot ${slot.number}`);
+    try {
+      await vehicleEntry(vehicleId, slot.id);
+      toast.success(`${vehicle.vehicleNumber} → Slot ${slot.number}`);
+    } catch {
+      toast.error('Failed to process entry');
+    }
   };
 
   const openPaymentDialog = (recordId: string) => {
@@ -71,14 +77,19 @@ export default function EntryExit() {
     }, 1500);
   };
 
-  const handleConfirmExit = () => {
+  const handleConfirmExit = async () => {
     if (!exitRecordId) return;
-    const result = vehicleExit(exitRecordId);
-    const vehicle = getVehicle(result.vehicleId);
-    toast.success(`Vehicle ${vehicle?.vehicleNumber} exited successfully. ₹${result.amount} paid.`);
-    setExitRecordId(null);
-    setBill(null);
-    setPaymentSuccess(false);
+    try {
+      const result = await vehicleExit(exitRecordId);
+      const vehicle = getVehicle(result.vehicleId);
+      toast.success(`Vehicle ${vehicle?.vehicleNumber} exited successfully. ₹${result.amount} paid.`);
+    } catch {
+      toast.error('Failed to process exit');
+    } finally {
+      setExitRecordId(null);
+      setBill(null);
+      setPaymentSuccess(false);
+    }
   };
 
   const closeDialog = () => {

@@ -1,9 +1,12 @@
+import { useEffect } from 'react';
 import { useParkingStore } from '@/lib/parking-store';
 import { Receipt, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Billing() {
-  const { records, getVehicle, getSlot } = useParkingStore();
+  const { records, getVehicle, getSlot, initialize } = useParkingStore();
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const completedRecords = records
     .filter(r => r.exitTime)
@@ -33,13 +36,14 @@ export default function Billing() {
             {completedRecords.map((r, i) => {
               const v = getVehicle(r.vehicleId);
               const s = getSlot(r.slotId);
+              const slotLabel = r.slotNumber ?? s?.number ?? 'Unknown slot';
               const hrs = Math.floor((r.duration || 0) / 60);
               const mins = (r.duration || 0) % 60;
               return (
                 <motion.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }} className="border-b border-border/50 hover:bg-muted/40 transition-colors">
                   <td className="py-3.5 px-5 font-mono text-xs text-muted-foreground">{r.id.toUpperCase()}</td>
                   <td className="py-3.5 px-5 font-semibold">{v?.vehicleNumber}</td>
-                  <td className="py-3.5 px-5"><span className="px-2.5 py-1 rounded-lg bg-lavender text-lavender-foreground text-xs font-semibold">{s?.number}</span></td>
+                  <td className="py-3.5 px-5"><span className="px-2.5 py-1 rounded-lg bg-lavender text-lavender-foreground text-xs font-semibold">{slotLabel}</span></td>
                   <td className="py-3.5 px-5 flex items-center gap-1.5"><Clock className="w-3 h-3 text-muted-foreground" />{hrs}h {mins}m</td>
                   <td className="py-3.5 px-5 font-bold">₹{r.amount}</td>
                   <td className="py-3.5 px-5">

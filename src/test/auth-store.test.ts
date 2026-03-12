@@ -138,6 +138,6 @@ describe('Auth Store — White-box Tests', () => {
     expect(session.email).toBe('new@park.io');
     // Also persisted in users list
     const users = JSON.parse(localStorage.getItem(USERS_KEY)!);
-    expect(users.find((u: any) => u.id === 'u1').name).toBe('Updated');
+    expect(users.find((u: { id: string; name: string }) => u.id === 'u1')?.name).toBe('Updated');
   });
 });

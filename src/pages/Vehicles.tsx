@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParkingStore, VehicleType } from '@/lib/parking-store';
 import { Search, Plus, Car, Bike, Zap, History, Clock, IndianRupee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,26 +11,34 @@ const typeIcons = { car: Car, bike: Bike, ev: Zap };
 const typeBg = { car: 'bg-lavender text-lavender-foreground', bike: 'bg-ice text-ice-foreground', ev: 'bg-peach text-peach-foreground' };
 
 export default function Vehicles() {
-  const { vehicles, records, addVehicle, getVehicleHistory, getSlot } = useParkingStore();
+  const { vehicles, records, addVehicle, getVehicleHistory, getSlot, initialize } = useParkingStore();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [historyVehicleId, setHistoryVehicleId] = useState<string | null>(null);
   const [form, setForm] = useState({ vehicleNumber: '', vehicleType: 'car' as VehicleType, ownerName: '', contactNumber: '' });
+
+  useEffect(() => { initialize(); }, [initialize]);
 
   const filtered = vehicles.filter(v =>
     v.vehicleNumber.toLowerCase().includes(search.toLowerCase()) ||
     v.ownerName.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.vehicleNumber || !form.ownerName) {
       toast.error('Please fill all required fields');
       return;
     }
-    addVehicle(form);
-    toast.success('Vehicle registered successfully');
-    setForm({ vehicleNumber: '', vehicleType: 'car', ownerName: '', contactNumber: '' });
-    setOpen(false);
+    try {
+      await addVehicle(form);
+      toast.success('Vehicle registered successfully');
+      setForm({ vehicleNumber: '', vehicleType: 'car', ownerName: '', contactNumber: '' });
+      setOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
+      console.error('[addVehicle]', err);
+      toast.error(`Failed to register vehicle: ${msg}`);
+    }
   };
 
   const historyVehicle = historyVehicleId ? vehicles.find(v => v.id === historyVehicleId) : null;
