@@ -5,16 +5,16 @@ describe('Parking Store — Unit Tests', () => {
   // Note: store is seeded on import; we test against seed data
 
   // ── Slot management ──
-  it('addSlot creates a new available slot', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T01', type: 'car', floor: 3 });
+  it('addSlot creates a new available slot', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T01', type: 'car', floor: 3 });
     expect(slot.status).toBe('available');
     expect(slot.number).toBe('T01');
     expect(useParkingStore.getState().slots.find(s => s.id === slot.id)).toBeTruthy();
   });
 
-  it('removeSlot deletes an available slot', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T02', type: 'bike', floor: 1 });
-    const result = useParkingStore.getState().removeSlot(slot.id);
+  it('removeSlot deletes an available slot', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T02', type: 'bike', floor: 1 });
+    const result = await useParkingStore.getState().removeSlot(slot.id);
     expect(result).toBe(true);
     expect(useParkingStore.getState().slots.find(s => s.id === slot.id)).toBeUndefined();
   });
@@ -27,11 +27,11 @@ describe('Parking Store — Unit Tests', () => {
     }
   });
 
-  it('toggleSlotDisabled toggles available ↔ disabled', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T03', type: 'ev', floor: 1 });
-    useParkingStore.getState().toggleSlotDisabled(slot.id);
+  it('toggleSlotDisabled toggles available ↔ disabled', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T03', type: 'ev', floor: 1 });
+    await useParkingStore.getState().toggleSlotDisabled(slot.id);
     expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('disabled');
-    useParkingStore.getState().toggleSlotDisabled(slot.id);
+    await useParkingStore.getState().toggleSlotDisabled(slot.id);
     expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('available');
   });
 
@@ -44,8 +44,8 @@ describe('Parking Store — Unit Tests', () => {
   });
 
   // ── Vehicle management ──
-  it('addVehicle creates and returns vehicle with id', () => {
-    const v = useParkingStore.getState().addVehicle({
+  it('addVehicle creates and returns vehicle with id', async () => {
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'KA-99-ZZ-0001',
       vehicleType: 'car',
       ownerName: 'Test',
@@ -56,38 +56,38 @@ describe('Parking Store — Unit Tests', () => {
   });
 
   // ── Entry / Exit flow ──
-  it('vehicleEntry creates record and marks slot occupied', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T04', type: 'car', floor: 1 });
-    const v = useParkingStore.getState().addVehicle({
+  it('vehicleEntry creates record and marks slot occupied', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T04', type: 'car', floor: 1 });
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'XX-00-YY-0000',
       vehicleType: 'car',
       ownerName: 'Flow Test',
       contactNumber: '0000000000',
     });
-    const record = useParkingStore.getState().vehicleEntry(v.id, slot.id);
+    const record = await useParkingStore.getState().vehicleEntry(v.id, slot.id);
     expect(record.exitTime).toBeNull();
     expect(record.paymentStatus).toBe('unpaid');
     expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('occupied');
   });
 
-  it('vehicleExit calculates bill and frees slot', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T05', type: 'bike', floor: 1 });
-    const v = useParkingStore.getState().addVehicle({
+  it('vehicleExit calculates bill and frees slot', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T05', type: 'bike', floor: 1 });
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'XX-11-YY-1111',
       vehicleType: 'bike',
       ownerName: 'Exit Test',
       contactNumber: '1111111111',
     });
-    const record = useParkingStore.getState().vehicleEntry(v.id, slot.id);
-    const exited = useParkingStore.getState().vehicleExit(record.id);
+    const record = await useParkingStore.getState().vehicleEntry(v.id, slot.id);
+    const exited = await useParkingStore.getState().vehicleExit(record.id);
     expect(exited.exitTime).toBeTruthy();
     expect(exited.amount).toBeGreaterThan(0);
     expect(exited.paymentStatus).toBe('paid');
     expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('available');
   });
 
-  it('vehicleExit throws for nonexistent record', () => {
-    expect(() => useParkingStore.getState().vehicleExit('nonexistent')).toThrow('Record not found');
+  it('vehicleExit throws for nonexistent record', async () => {
+    await expect(useParkingStore.getState().vehicleExit('nonexistent')).rejects.toThrow('Record not found');
   });
 
   // ── Rate management ──
@@ -112,15 +112,15 @@ describe('Parking Store — Unit Tests', () => {
     expect(useParkingStore.getState().calculateBill('nonexistent')).toBeNull();
   });
 
-  it('calculateBill returns valid preview for active record', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'T06', type: 'car', floor: 1 });
-    const v = useParkingStore.getState().addVehicle({
+  it('calculateBill returns valid preview for active record', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'T06', type: 'car', floor: 1 });
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'BB-22-CC-2222',
       vehicleType: 'car',
       ownerName: 'Bill Test',
       contactNumber: '2222222222',
     });
-    const record = useParkingStore.getState().vehicleEntry(v.id, slot.id);
+    const record = await useParkingStore.getState().vehicleEntry(v.id, slot.id);
     const bill = useParkingStore.getState().calculateBill(record.id);
     expect(bill).not.toBeNull();
     expect(bill!.amount).toBeGreaterThan(0);
@@ -147,15 +147,15 @@ describe('Parking Store — White-box Tests', () => {
     expect(todayRev).toBeGreaterThanOrEqual(0);
   });
 
-  it('vehicleEntry sets correct initial record fields', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'WB01', type: 'ev', floor: 2 });
-    const v = useParkingStore.getState().addVehicle({
+  it('vehicleEntry sets correct initial record fields', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'WB01', type: 'ev', floor: 2 });
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'WB-TEST',
       vehicleType: 'ev',
       ownerName: 'WB',
       contactNumber: '0',
     });
-    const r = useParkingStore.getState().vehicleEntry(v.id, slot.id);
+    const r = await useParkingStore.getState().vehicleEntry(v.id, slot.id);
     expect(r.duration).toBeNull();
     expect(r.amount).toBeNull();
     expect(r.paymentStatus).toBe('unpaid');

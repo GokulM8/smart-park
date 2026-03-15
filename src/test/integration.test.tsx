@@ -36,11 +36,11 @@ describe('Integration Tests', () => {
     expect(useAuthStore.getState().user?.name).toBe('Updated User');
   });
 
-  it('full parking flow: add vehicle → entry → bill → exit → history', () => {
+  it('full parking flow: add vehicle → entry → bill → exit → history', async () => {
     const store = useParkingStore.getState();
 
     // Add vehicle
-    const vehicle = store.addVehicle({
+    const vehicle = await store.addVehicle({
       vehicleNumber: 'INT-01-TEST',
       vehicleType: 'car',
       ownerName: 'Integration Tester',
@@ -52,7 +52,7 @@ describe('Integration Tests', () => {
     expect(availableSlot).toBeTruthy();
 
     // Entry
-    const record = useParkingStore.getState().vehicleEntry(vehicle.id, availableSlot!.id);
+    const record = await useParkingStore.getState().vehicleEntry(vehicle.id, availableSlot!.id);
     expect(useParkingStore.getState().getSlot(availableSlot!.id)?.status).toBe('occupied');
     expect(useParkingStore.getState().getActiveRecords().find(r => r.id === record.id)).toBeTruthy();
 
@@ -62,7 +62,7 @@ describe('Integration Tests', () => {
     expect(bill!.rate).toBe(useParkingStore.getState().rates.car);
 
     // Exit
-    const exited = useParkingStore.getState().vehicleExit(record.id);
+    const exited = await useParkingStore.getState().vehicleExit(record.id);
     expect(useParkingStore.getState().getSlot(availableSlot!.id)?.status).toBe('available');
     expect(exited.paymentStatus).toBe('paid');
 
@@ -72,25 +72,25 @@ describe('Integration Tests', () => {
     expect(history[0].id).toBe(record.id);
   });
 
-  it('disabled slots are excluded from available count', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'DIS01', type: 'car', floor: 1 });
+  it('disabled slots are excluded from available count', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'DIS01', type: 'car', floor: 1 });
     const beforeAvail = useParkingStore.getState().slots.filter(s => s.status === 'available').length;
-    useParkingStore.getState().toggleSlotDisabled(slot.id);
+    await useParkingStore.getState().toggleSlotDisabled(slot.id);
     const afterAvail = useParkingStore.getState().slots.filter(s => s.status === 'available').length;
     expect(afterAvail).toBe(beforeAvail - 1);
   });
 
-  it('rate change affects subsequent exit calculations', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'RATE01', type: 'ev', floor: 1 });
-    const v = useParkingStore.getState().addVehicle({
+  it('rate change affects subsequent exit calculations', async () => {
+    const slot = await useParkingStore.getState().addSlot({ number: 'RATE01', type: 'ev', floor: 1 });
+    const v = await useParkingStore.getState().addVehicle({
       vehicleNumber: 'RATE-TEST',
       vehicleType: 'ev',
       ownerName: 'Rate Tester',
       contactNumber: '0',
     });
     useParkingStore.getState().setRate('ev', 200);
-    const record = useParkingStore.getState().vehicleEntry(v.id, slot.id);
-    const exited = useParkingStore.getState().vehicleExit(record.id);
+    const record = await useParkingStore.getState().vehicleEntry(v.id, slot.id);
+    const exited = await useParkingStore.getState().vehicleExit(record.id);
     // Minimum 1 hour at 200/hr
     expect(exited.amount).toBeGreaterThanOrEqual(200);
   });
@@ -130,18 +130,20 @@ describe('Black-box Tests', () => {
   });
 
   it('a slot that was just freed can be reused', () => {
-    const slot = useParkingStore.getState().addSlot({ number: 'REUSE01', type: 'car', floor: 1 });
-    const v1 = useParkingStore.getState().addVehicle({ vehicleNumber: 'R1', vehicleType: 'car', ownerName: 'A', contactNumber: '0' });
-    const v2 = useParkingStore.getState().addVehicle({ vehicleNumber: 'R2', vehicleType: 'car', ownerName: 'B', contactNumber: '0' });
+    return (async () => {
+      const slot = await useParkingStore.getState().addSlot({ number: 'REUSE01', type: 'car', floor: 1 });
+      const v1 = await useParkingStore.getState().addVehicle({ vehicleNumber: 'R1', vehicleType: 'car', ownerName: 'A', contactNumber: '0' });
+      const v2 = await useParkingStore.getState().addVehicle({ vehicleNumber: 'R2', vehicleType: 'car', ownerName: 'B', contactNumber: '0' });
 
-    // First vehicle parks and leaves
-    const r1 = useParkingStore.getState().vehicleEntry(v1.id, slot.id);
-    useParkingStore.getState().vehicleExit(r1.id);
+      // First vehicle parks and leaves
+      const r1 = await useParkingStore.getState().vehicleEntry(v1.id, slot.id);
+      await useParkingStore.getState().vehicleExit(r1.id);
 
-    // Second vehicle can now use same slot
-    const r2 = useParkingStore.getState().vehicleEntry(v2.id, slot.id);
-    expect(r2.slotId).toBe(slot.id);
-    expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('occupied');
+      // Second vehicle can now use same slot
+      const r2 = await useParkingStore.getState().vehicleEntry(v2.id, slot.id);
+      expect(r2.slotId).toBe(slot.id);
+      expect(useParkingStore.getState().getSlot(slot.id)?.status).toBe('occupied');
+    })();
   });
 
   it('session persists across initialize calls', async () => {

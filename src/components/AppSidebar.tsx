@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, Car, ParkingSquare, ArrowRightLeft, Receipt, BarChart3, LogOut, Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const navItems = [
@@ -9,7 +9,6 @@ const navItems = [
   { to: '/entry-exit', icon: ArrowRightLeft, label: 'Entry / Exit' },
   { to: '/billing', icon: Receipt, label: 'Billing' },
   { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/admin', icon: Settings, label: 'Admin Panel' },
 ];
 
 export default function AppSidebar() {
