@@ -4,7 +4,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**URL**: smart-park-green-eight.vercel.app
 
 # Smart Park Hub
 
