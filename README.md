@@ -1,6 +1,4 @@
-# Welcome 
-
-
+# Welcome
 
 ## Project info
 

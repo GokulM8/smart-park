@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "@testing-library/jest-dom";
 import { vi, beforeEach } from 'vitest';
 import { useParkingStore } from '@/lib/parking-store';
