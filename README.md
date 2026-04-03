@@ -145,10 +145,4 @@ For seamless Supabase integration use Vercel, Netlify, or Supabase Hosting and m
 
 ---
 
-If you'd like, I can also:
-
-- Add a short developer `CONTRIBUTING.md` and `DEVELOPMENT.md` with common workflows
-- Create GitHub Actions for tests and linting
-- Add a small README section describing each top-level `src/` folder in more detail
-
 License: See repository settings for license information.
