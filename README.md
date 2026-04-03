@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: smart-park-green-eight.vercel.app
+**URL**: [smart-park-green-eight.vercel.app](https://smart-park-green-eight.vercel.app)
 
 # Smart Park Hub
 
