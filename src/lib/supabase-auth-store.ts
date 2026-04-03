@@ -55,6 +55,11 @@ async function getProfileOrFallback(sessionUser: SessionUserLike, nameOverride?:
   return data as User;
 }
 
+async function hydrateUserProfile(sessionUser: SessionUserLike, nameOverride?: string, emailOverride?: string) {
+  const profile = await getProfileOrFallback(sessionUser, nameOverride, emailOverride);
+  useAuthStore.setState({ user: profile, error: null, isLoading: false });
+}
+
 /**
  * Supabase Auth Store
  * Manages user authentication with Supabase
@@ -82,8 +87,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (err) throw err;
 
       if (session?.user) {
-        const user = await getProfileOrFallback(session.user);
-        set({ user, isLoading: false });
+        set({ user: buildFallbackUser(session.user), isLoading: false });
+        void hydrateUserProfile(session.user);
       } else {
         set({ user: null, isLoading: false });
       }
@@ -107,8 +112,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (signInErr) throw signInErr;
       if (!session?.user) throw new Error('No session returned');
 
-      const user = await getProfileOrFallback(session.user);
-      set({ user, isLoading: false });
+      set({ user: buildFallbackUser(session.user), isLoading: false });
+      void hydrateUserProfile(session.user);
     } catch (err) {
       const message = handleSupabaseError(err);
       set({ error: message, isLoading: false });
@@ -140,8 +145,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      const user = await getProfileOrFallback(session.user, name, email);
-      set({ user, isLoading: false });
+      set({ user: buildFallbackUser(session.user, name, email), isLoading: false });
+      void hydrateUserProfile(session.user, name, email);
     } catch (err) {
       const message = handleSupabaseError(err);
       set({ error: message, isLoading: false });
@@ -252,8 +257,8 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event,
   }
 
   try {
-    const user = await getProfileOrFallback(session.user);
-    useAuthStore.setState({ user, error: null, isLoading: false });
+    useAuthStore.setState({ user: buildFallbackUser(session.user), error: null, isLoading: false });
+    void hydrateUserProfile(session.user);
   } catch {
     useAuthStore.setState({ user: buildFallbackUser(session.user), error: null, isLoading: false });
   }
