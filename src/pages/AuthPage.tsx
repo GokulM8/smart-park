@@ -209,13 +209,7 @@ export default function AuthPage() {
             </button>
           </div>
 
-          {mode === 'login' && (
-            <div className="mt-4 p-3 rounded-xl bg-muted/50 text-center">
-              <p className="text-[11px] text-muted-foreground">
-                Demo: <span className="font-mono font-medium text-foreground">admin@park.io</span> / <span className="font-mono font-medium text-foreground">admin123</span>
-              </p>
-            </div>
-          )}
+
         </div>
       </motion.div>
     </div>
