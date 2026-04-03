@@ -4,13 +4,16 @@ import { Database } from '@/types/supabase';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error(
-    'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY'
-  );
-}
+export const SUPABASE_CONFIG_ERROR = !SUPABASE_URL || !SUPABASE_ANON_KEY
+  ? 'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local'
+  : null;
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Avoid crashing the whole app at import-time.
+// A clear UI message is shown from App when config is missing.
+const safeSupabaseUrl = SUPABASE_URL || 'https://placeholder.supabase.co';
+const safeSupabaseAnonKey = SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+export const supabase = createClient<Database>(safeSupabaseUrl, safeSupabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,

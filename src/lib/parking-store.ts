@@ -318,15 +318,39 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
   },
 }));
 
-const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-  useParkingStore.setState(state => ({
-    slots: session?.user ? state.slots : [],
-    vehicles: [],
-    records: [],
-    loading: false,
-    initialized: false,
-    initializedForUserId: session?.user?.id ?? null,
-  }));
+const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  const state = useParkingStore.getState();
+  const nextUserId = session?.user?.id ?? null;
+
+  // On sign-out, clear all cached data.
+  if (!nextUserId) {
+    useParkingStore.setState({
+      slots: [],
+      vehicles: [],
+      records: [],
+      loading: false,
+      initialized: false,
+      initializedForUserId: null,
+    });
+    return;
+  }
+
+  // Ignore frequent refresh events for the same user to avoid repeated background loading.
+  if (event === 'TOKEN_REFRESHED' && state.initializedForUserId === nextUserId) {
+    return;
+  }
+
+  // Only reset cache if the authenticated user actually changed.
+  if (state.initializedForUserId !== nextUserId) {
+    useParkingStore.setState({
+      slots: [],
+      vehicles: [],
+      records: [],
+      loading: false,
+      initialized: false,
+      initializedForUserId: nextUserId,
+    });
+  }
 });
 
 if (import.meta.hot) {

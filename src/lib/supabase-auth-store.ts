@@ -70,7 +70,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialize: async () => {
     set({ isLoading: true });
     try {
-      const { data: { session }, error: err } = await supabase.auth.getSession();
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error('Session initialization timed out')), 12000);
+        }),
+      ]);
+
+      const { data: { session }, error: err } = sessionResult;
 
       if (err) throw err;
 
@@ -224,12 +231,31 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // Subscribe to auth state changes
-const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-  if (session?.user) {
+const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+  if (!session?.user) {
+    useAuthStore.setState({ user: null, error: null, isLoading: false });
+    return;
+  }
+
+  const currentUser = useAuthStore.getState().user;
+
+  // Avoid repeated profile fetches on frequent refresh events for same user.
+  if (event === 'TOKEN_REFRESHED' && currentUser?.id === session.user.id) {
+    useAuthStore.setState({ isLoading: false, error: null });
+    return;
+  }
+
+  // If same user is already loaded, skip redundant fetches for initial/session sync events.
+  if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && currentUser?.id === session.user.id) {
+    useAuthStore.setState({ isLoading: false, error: null });
+    return;
+  }
+
+  try {
     const user = await getProfileOrFallback(session.user);
-    useAuthStore.setState({ user, error: null });
-  } else {
-    useAuthStore.setState({ user: null });
+    useAuthStore.setState({ user, error: null, isLoading: false });
+  } catch {
+    useAuthStore.setState({ user: buildFallbackUser(session.user), error: null, isLoading: false });
   }
 });
 

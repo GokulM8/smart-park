@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { useAuthStore } from "./lib/supabase-auth-store";
+import { SUPABASE_CONFIG_ERROR } from "./lib/supabase";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppLayout from "./components/AppLayout";
 import AuthPage from "./pages/AuthPage";
@@ -32,19 +33,11 @@ function LoadingFallback() {
 }
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, initialize } = useAuthStore();
+  const { user, initialize } = useAuthStore();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   if (!user) return <AuthPage />;
   return <>{children}</>;
@@ -52,6 +45,19 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 const App = () => (
   <ErrorBoundary>
+    {SUPABASE_CONFIG_ERROR ? (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-xl w-full rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+          <h1 className="text-xl font-semibold mb-3">Supabase setup required</h1>
+          <p className="text-sm text-muted-foreground mb-4">{SUPABASE_CONFIG_ERROR}</p>
+          <ol className="list-decimal pl-5 text-sm space-y-1 text-muted-foreground">
+            <li>Create or update <span className="font-mono">.env.local</span> in the project root.</li>
+            <li>Add <span className="font-mono">VITE_SUPABASE_URL</span> and <span className="font-mono">VITE_SUPABASE_ANON_KEY</span>.</li>
+            <li>Restart the dev server.</li>
+          </ol>
+        </div>
+      </div>
+    ) : (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -77,6 +83,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    )}
   </ErrorBoundary>
 );
 
