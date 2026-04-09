@@ -89,7 +89,7 @@ export default {
   				DEFAULT: 'hsl(var(--info))',
   				foreground: 'hsl(var(--info-foreground))'
   			},
-  			peach: {
+  			blue: {
   				DEFAULT: 'hsl(var(--peach))',
   				foreground: 'hsl(var(--peach-foreground))'
   			},

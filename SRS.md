@@ -147,13 +147,5 @@ DB schema and constraints should match files in `supabase/migrations/` (e.g., `0
 - Billing accuracy depends on correct timestamps and consistent data.
 - Real-time features depend on Supabase service availability and plan limits.
 
-## 14. Next Steps
-
-1. Review and approve this SRS.
-2. Create issues for each FR with acceptance tests.
-3. Add CI workflow to run `npm run lint` and `npm run test` on PRs.
-4. (Optional) I can open a PR adding this file and/or create the issues.
 
 ---
-
-If you want, I will commit and push this file now and open issues for the FRs.
